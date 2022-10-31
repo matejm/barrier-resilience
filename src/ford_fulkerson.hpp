@@ -83,7 +83,7 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const
     // Map blocked_edges is used to keep track of blocked edges (at start, all reversed edges are blocked, when we find a path
     // from start to end, we unblock all reverse edges on that path and block all forward edges on that path).
     Graph residual_graph = std::vector<std::vector<int>>(graph.size());
-    std::map<std::pair<int, int>, bool> blocked_edges = std::map<std::pair<int, int>, bool>();
+    std::map<std::pair<int, int>, bool> blocked_edges;
 
     // Add edges to residual graph.
     for (int u = 0; u < graph.size(); u++) {
