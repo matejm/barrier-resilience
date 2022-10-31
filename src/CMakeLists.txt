@@ -1,0 +1,2 @@
+add_library(barrier_resillience INTERFACE)
+target_include_directories(barrier_resillience INTERFACE .)

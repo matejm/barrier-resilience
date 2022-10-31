@@ -1,0 +1,5 @@
+add_executable(geometry_objects geometry_objects.cpp)
+target_link_libraries(geometry_objects barrier_resillience)
+
+add_executable(circles_to_graph circles_to_graph.cpp)
+target_link_libraries(circles_to_graph barrier_resillience)
