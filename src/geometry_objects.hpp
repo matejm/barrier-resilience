@@ -1,5 +1,8 @@
-#ifndef BARRIER_RESILLIENCE_GEOMETRY_OBJECTS_HPP
-#define BARRIER_RESILLIENCE_GEOMETRY_OBJECTS_HPP
+#ifndef BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP
+#define BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP
+
+#include <variant>
+#include "utils.hpp"
 
 template<class T>
 struct Point{
@@ -7,51 +10,101 @@ struct Point{
     T y;
 };
 
+// Disk with center and radius
 template<class T>
-struct Circle {
+struct Disk {
 public:
     Point<T> center;
     T radius;
 };
 
-// Intersects returns true if the two circles have a non-empty intersection.
-// (if one circle is contained in the other, they are considered to intersect)
+// Left or right border - vertical segment with given x coordinate
 template<class T>
-bool intersects(const Circle<T>& c1, const Circle<T>& c2) {
-    T dx = c1.center.x - c2.center.x;
-    T dy = c1.center.y - c2.center.y;
+struct Border {
+    T x;
+    // Is this left or right border?
+    bool left;
+};
+
+template<class T>
+using GeometryObject = std::variant<Disk<T>, Border<T>>;
+
+// Intersects returns true if the two disks have a non-empty intersection.
+// (if one disk is contained in the other, they are considered to intersect)
+template<class T>
+bool intersects(const Disk<T>& d1, const Disk<T>& d2) {
+    T dx = d1.center.x - d2.center.x;
+    T dy = d1.center.y - d2.center.y;
     // Keep distance squared to avoid sqrt for better numerical stability.
     T d_squared = dx * dx + dy * dy;
     // Sum of radii squared.
-    T r_squared = (c1.radius + c2.radius) * (c1.radius + c2.radius);
+    T r_squared = (d1.radius + d2.radius) * (d1.radius + d2.radius);
     return d_squared <= r_squared;
 }
 
-// Returns index of leftmost circle.
-// If there are multiple leftmost circles, returns any of them.
-// If there are no circles, returns -1.
+// Intersection of border and disk.
 template<class T>
-int leftmost_circle(std::vector<Circle<T>>& circles) {
-    int leftmost = -1;
-    for (int i = 0; i < circles.size(); ++i) {
-        if (leftmost == -1 || circles[i].center.x < circles[leftmost].center.x) {
-            leftmost = i;
+bool intersects(const Disk<T>& d, const Border<T>& b) {
+    if (b.left) {
+        // Check if disk intersects left border.
+        if (d.center.x <= b.x) {
+            // Center of the disk is to the left of the border.
+            return true;
         }
+        // Distance from the center of the disk to the border is less than the radius.
+        return d.center.x - d.radius <= b.x;
     }
-    return leftmost;
+    // Check if disk intersects right border.
+    if (d.center.x >= b.x) {
+        // Center of the disk is to the right of the border.
+        return true;
+    }
+    // Distance from the center of the disk to the border is less than the radius.
+    return b.x <= d.center.x + d.radius;
 }
 
-// Returns index of rightmost circle.
-// Similar to leftmost_circle.
 template<class T>
-int rightmost_circle(std::vector<Circle<T>>& circles) {
-    int rightmost = -1;
-    for (int i = 0; i < circles.size(); ++i) {
-        if (rightmost == -1 || circles[i].center.x > circles[rightmost].center.x) {
-            rightmost = i;
-        }
-    }
-    return rightmost;
+bool intersects(const Border<T>& b, const Disk<T>& d) {
+    return intersects(d, b);
 }
 
-#endif // BARRIER_RESILLIENCE_GEOMETRY_OBJECTS_HPP
+template<class T>
+bool intersects(const Border<T>& b1, const Border<T>& b2) {
+    if (b1.left == b2.left) {
+        // Both borders are left or both are right.
+        return true;
+    }
+    // If left border is to the right of the right border, they do intersect.
+    if (b1.left) {
+        return b1.x >= b2.x;
+    }
+    return b2.x >= b1.x;
+}
+
+template<class T>
+bool intersects(const GeometryObject<T>& g1, const GeometryObject<T>& g2) {
+    return g1 | match {
+        [&g2](const Disk<T>& d) {
+            return g2 | match {
+                [&d](const Disk<T>& d2) {
+                    return intersects(d, d2);
+                },
+                [&d](const Border<T>& b) {
+                    return intersects(d, b);
+                }
+            };
+        },
+        [&g2](const Border<T>& b) { 
+            return g2 | match {
+                [&b](const Disk<T>& d) {
+                    return intersects(d, b);
+                },
+                [&b](const Border<T>& b2) {
+                    return intersects(b, b2);
+                }
+            };
+         },
+    };
+}
+
+#endif // BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP

@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILLIENCE_GRAPH_HPP
-#define BARRIER_RESILLIENCE_GRAPH_HPP
+#ifndef BARRIER_RESILIENCE_GRAPH_HPP
+#define BARRIER_RESILIENCE_GRAPH_HPP
 
 #include <vector>
 
@@ -10,12 +10,12 @@ template<class T>
 using Graph = std::vector<std::vector<int>>;
 
 template<class T>
-Graph<T> circles_to_graph(const std::vector<Circle<T>>& circles) {
-    // graph[i] is the list of indices of circles that ith-circle intersects.
-    auto graph = Graph<T>(circles.size());
-    for (int i = 0; i < circles.size(); ++i) {
-        for (int j = i + 1; j < circles.size(); ++j) {
-            if (intersects(circles[i], circles[j])) {
+Graph<T> objects_to_graph(const std::vector<GeometryObject<T>>& objects) {
+    // graph[i] is the list of indices of disks that ith-disk intersects.
+    auto graph = Graph<T>(objects.size());
+    for (int i = 0; i < objects.size(); ++i) {
+        for (int j = i + 1; j < objects.size(); ++j) {
+            if (intersects(objects[i], objects[j])) {
                 // Symmetric graph.
                 graph[i].push_back(j);
                 graph[j].push_back(i);
@@ -26,4 +26,4 @@ Graph<T> circles_to_graph(const std::vector<Circle<T>>& circles) {
 }
 
 
-#endif // BARRIER_RESILLIENCE_GRAPH_HPP
+#endif // BARRIER_RESILIENCE_GRAPH_HPP

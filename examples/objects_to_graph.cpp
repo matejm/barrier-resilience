@@ -1,0 +1,27 @@
+#include <vector>
+#include <iostream>
+#include "geometry_objects.hpp"
+#include "graph.hpp"
+
+int main() {
+    auto disks = std::vector<GeometryObject<int>>{
+        Border<int>{0, true},
+        Disk<int>{{0, 0}, 1},
+        Disk<int>{{1, 1}, 1},
+        Disk<int>{{2, 2}, 2},
+        Disk<int>{{3, 3}, 1},
+        Disk<int>{{4, 4}, 1},
+        Disk<int>{{5, 5}, 1},
+        Border<int>{5, false},
+    };
+
+    auto graph = objects_to_graph(static_cast<std::vector<GeometryObject<int>>>(disks));
+    for (int i = 0; i < graph.size(); ++i) {
+        std::cout << "Object " << i << " intersects with objects: ";
+        for (int j = 0; j < graph[i].size(); ++j) {
+            std::cout << graph[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+}

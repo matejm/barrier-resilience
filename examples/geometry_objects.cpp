@@ -3,7 +3,7 @@
 #include "geometry_objects.hpp"
 
 int main() {
-    auto circles = std::vector<Circle<int>>{
+    auto disks = std::vector<Disk<int>>{
         {{0, 0}, 1},
         {{1, 1}, 1},
         {{2, 2}, 2},
@@ -11,10 +11,10 @@ int main() {
         {{4, 4}, 1},
     };
 
-    for (int i = 0; i < circles.size(); ++i) {
-        for (int j = i + 1; j < circles.size(); ++j) {
-            if (intersects(circles[i], circles[j])) {
-                std::cout << "Circle " << i << " intersects circle " << j << std::endl;
+    for (int i = 0; i < disks.size(); ++i) {
+        for (int j = i + 1; j < disks.size(); ++j) {
+            if (intersects(disks[i], disks[j])) {
+                std::cout << "Disk " << i << " intersects disk " << j << std::endl;
             }
         }
     }
