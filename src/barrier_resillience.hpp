@@ -2,45 +2,22 @@
 #define BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
 
 #include <vector>
+#include <iostream>
 #include "geometry_objects.hpp"
 #include "graph.hpp"
+#include "ford_fulkerson.hpp"
 
 template<class T>
-std::vector<GeometryObject<T>> prepare_objects_vector(const std::vector<Disk<T>>& disks, const T left_border_x, const T right_border_x) {
-    // Create new vector of disks with left and right borders.
-    auto objects = std::vector<GeometryObject<T>>{};
-
-    // Left border.
-    objects.push_back(Border<T>{left_border_x, true});
-    
-    // Disks.
-    for (const auto& disk : disks) {
-        objects.push_back(disk);
-    }
-
-    // Right border.
-    objects.push_back(Border<T>{right_border_x, false});
-
-    return objects;
-}
-
-template<class T>
-void barrier_resilience(const std::vector<Disk<T>>& disks, const T left_border_x, const T right_border_x) {
-    // Get vector of disks with left and right borders.
-    auto objects = prepare_objects_vector(disks, left_border_x, right_border_x);
+int barrier_resilience(const std::vector<Disk<T>>& disks, const T left_border_x, const T right_border_x) {
+    // Create graph of objects.
+    auto graph = generate_expanded_graph(disks, left_border_x, right_border_x);
 
     // Start and end indices - left and right borders.
-    // (see how prepare_objects_vector works).
-    int left_border_index = 0;
-    int right_border_index = objects.size() - 1;
+    int left_border_index = graph_start_index(graph);
+    int right_border_index = graph_end_index(graph);
 
-    // Create graph of objects.
-    auto graph = objects_to_graph(objects);
-
-    // TODO Expand each node representing a disk.
-
-    // TODO Compute max flow in graph from start to end.
-
+    // Return minimal number of circles that need to be removed.
+    return ford_fulkerson_max_flow(graph, left_border_index, right_border_index);
 }
 
 
