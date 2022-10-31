@@ -26,6 +26,10 @@ int graph_outbound_index(const Graph& graph, int disk_index) {
     return 2 * disk_index + 2;
 }
 
+int graph_index_to_disk_index(const Graph& graph, int index) {
+    return (index - 1) / 2;
+}
+
 // Creates "expanded" graph from vector of disks.
 // Graph looks like this: undirected graph, represented by adjacency list,
 // graph[i] is a vector of indices of objects that have at least one point in common with object i.

@@ -6,3 +6,6 @@ target_link_libraries(objects_to_graph barrier_resilience)
 
 add_executable(barrier_resilience_example barrier_resilience_example.cpp)
 target_link_libraries(barrier_resilience_example barrier_resilience)
+
+add_executable(barrier_resilience_minimal_example barrier_resilience_minimal_example.cpp)
+target_link_libraries(barrier_resilience_minimal_example barrier_resilience)

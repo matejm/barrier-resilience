@@ -12,7 +12,7 @@ const int svgSizeMultiplier = 100;
 // Far from perfect, but very useful for debugging.
 // Returns svg string.
 template<class T>
-std::string objects_to_svg(const std::vector<GeometryObject<T>>& objects) {
+std::string objects_to_svg(const std::vector<GeometryObject<T>>& objects, std::vector<int> to_remove = {}) {
     std::stringstream ss;
 
     // Find min and max x and y coordinates.
@@ -57,20 +57,25 @@ std::string objects_to_svg(const std::vector<GeometryObject<T>>& objects) {
         << "\">" << std::endl;
 
     // Show objects.
-    for (const auto& object : objects) {
+    for (int i = 0; i < objects.size(); ++i) {
+        const auto& object = objects[i];
+        // Should be object marked as removed.
+        bool to_remove_object = std::find(to_remove.begin(), to_remove.end(), i) != to_remove.end();
+
         object | match {
             [&ss, min_x, min_y, max_y](const Border<int>& border) {
                 ss << "<line x1=\"" << svgSizeMultiplier * border.x - min_x
-                    << "\" y1=\"" << 0 - min_y
+                    << "\" y1=\"" << min_y
                     << "\" x2=\"" << svgSizeMultiplier * border.x - min_x
                     << "\" y2=\"" << max_y - min_y
-                    << "\" style=\"stroke:rgb(0,0,0);stroke-width:1\" />" << std::endl;
+                    << "\" style=\"stroke:rgb(0,0,0);stroke-width:2\" />" << std::endl;
             },
-            [&ss, min_x, min_y](const Disk<int>& disk) {
+            [&ss, min_x, min_y, to_remove_object](const Disk<int>& disk) {
                 ss << "<circle cx=\"" << svgSizeMultiplier * disk.center.x - min_x
                     << "\" cy=\"" << svgSizeMultiplier * disk.center.y - min_y
                     << "\" r=\"" << svgSizeMultiplier * disk.radius
-                    << "\" stroke=\"black\" stroke-width=\"1\" fill=\"none\" />" << std::endl;
+                    << "\" stroke=\"" << (to_remove_object ? "red" : "black")
+                    << "\" stroke-width=\"1\" fill=\"none\" />" << std::endl;
             },
         };
     }
@@ -79,15 +84,16 @@ std::string objects_to_svg(const std::vector<GeometryObject<T>>& objects) {
     return ss.str();
 }
 
+// to_remove - indices of disk which need to be marked as removed (indices will stay the same because border is pushed to the end).
 template<class T>
-std::string problem_to_svg(const std::vector<Disk<T>>& disks, const int left_border_x, const int right_border_x) {
+std::string problem_to_svg(const std::vector<Disk<T>>& disks, const int left_border_x, const int right_border_x, std::vector<int> to_remove = {}) {
     std::vector<GeometryObject<int>> objects;
     for (const Disk<int>& disk : disks) {
         objects.push_back(disk);
     }
     objects.push_back(Border<int>{left_border_x, true});
     objects.push_back(Border<int>{right_border_x, false});
-    return objects_to_svg(objects);
+    return objects_to_svg(objects, to_remove);
 }
 
 #endif // BARRIER_RESILIENCE_VISUALIZE_HPP
