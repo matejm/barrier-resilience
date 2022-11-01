@@ -3,3 +3,5 @@ bin
 .vscode
 cmake-build-debug
 .idea
+lib
+.DS_Store
