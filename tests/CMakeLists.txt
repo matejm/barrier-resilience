@@ -13,7 +13,8 @@ add_executable(
         tests
         test_geometry_objects.cpp
         test_ford_fulkerson.cpp
-        test_graph.cpp)
+        test_graph.cpp
+        test_barrier_resilience.cpp)
 
 target_link_libraries(
         tests
