@@ -2,6 +2,7 @@
 #define BARRIER_RESILIENCE_GRAPH_HPP
 
 #include <vector>
+#include <iostream>
 #include "geometry_objects.hpp"
 
 // Graph represents a graph with nodes and edges.
@@ -10,15 +11,15 @@
 using Graph = std::vector<std::vector<int>>;
 
 // Helper functions for expanded graph.
-int graph_start_index(const Graph& graph);
+int graph_start_index(const Graph &graph);
 
-int graph_end_index(const Graph& graph);
+int graph_end_index(const Graph &graph);
 
-int graph_inbound_index(const Graph& graph, int disk_index);
+int graph_inbound_index(const Graph &graph, int disk_index);
 
-int graph_outbound_index(const Graph& graph, int disk_index);
+int graph_outbound_index(const Graph &graph, int disk_index);
 
-int graph_index_to_disk_index(const Graph& graph, int index);
+int graph_index_to_disk_index(const Graph &graph, int index);
 
 // Creates "expanded" graph from vector of disks.
 // Graph looks like this: undirected graph, represented by adjacency list,
@@ -33,7 +34,7 @@ int graph_index_to_disk_index(const Graph& graph, int index);
 // intersects border) and connection to end (right border) from every node which intersects border (2*i + 2 for all i-s
 // where i-th disk intersects right border).
 template<class T>
-Graph generate_expanded_graph(const std::vector<Disk<T>>& disks, T left_border_x, T right_border_x) {
+Graph generate_expanded_graph(const std::vector<Disk<T>> &disks, T left_border_x, T right_border_x) {
     const Border<T>
             left_border = Border<T>{left_border_x, true},
             right_border = Border<T>{right_border_x, false};
@@ -77,7 +78,7 @@ Graph generate_expanded_graph(const std::vector<Disk<T>>& disks, T left_border_x
 }
 
 template<class T>
-Graph objects_to_graph(const std::vector<GeometryObject<T>>& objects) {
+Graph objects_to_graph(const std::vector<GeometryObject<T>> &objects) {
     // graph[i] is the list of indices of disks that ith-disk intersects.
     auto graph = Graph(objects.size());
     for (int i = 0; i < objects.size(); ++i) {
@@ -91,6 +92,8 @@ Graph objects_to_graph(const std::vector<GeometryObject<T>>& objects) {
     }
     return graph;
 }
+
+void print_graph(const Graph &graph);
 
 
 #endif // BARRIER_RESILIENCE_GRAPH_HPP

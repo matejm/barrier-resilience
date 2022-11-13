@@ -1,2 +1,7 @@
-add_library(barrier_resilience STATIC graph.cpp ford_fulkerson.cpp)
+add_library(
+        barrier_resilience STATIC
+        graph.cpp
+        ford_fulkerson.cpp
+        even_tarjan.cpp)
+
 target_include_directories(barrier_resilience PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

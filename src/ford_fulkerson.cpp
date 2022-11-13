@@ -1,7 +1,8 @@
 #include "ford_fulkerson.hpp"
 
 
-bool bfs(const Graph& g, const std::map<std::pair<int, int>, bool>& blocked_edges, std::vector<int>& parent, std::vector<bool>& visited, int start, int end) {
+bool bfs(const Graph &g, const std::map<std::pair<int, int>, bool> &blocked_edges, std::vector<int> &parent,
+         std::vector<bool> &visited, int start, int end) {
     std::queue<int> q;
     q.push(start);
     visited[start] = true;
@@ -15,7 +16,7 @@ bool bfs(const Graph& g, const std::map<std::pair<int, int>, bool>& blocked_edge
             return true;
         }
 
-        for (int v : g[u]) {
+        for (int v: g[u]) {
             // If not visited and edge is not blocked.
             if (!visited[v] && !blocked_edges.at({u, v})) {
                 visited[v] = true;
@@ -30,7 +31,7 @@ bool bfs(const Graph& g, const std::map<std::pair<int, int>, bool>& blocked_edge
 }
 
 // Reconstruction of path from start to end using parent vector.
-std::vector<int> reconstruct_path(const std::vector<int>& parent, int start, int end) {
+std::vector<int> reconstruct_path(const std::vector<int> &parent, int start, int end) {
     std::vector<int> path;
     // We start from end and go backwards.
     int current = end;
@@ -43,8 +44,45 @@ std::vector<int> reconstruct_path(const std::vector<int>& parent, int start, int
     return path;
 }
 
+std::vector<std::pair<int, int>> get_min_cut(const Graph &graph,
+                                             const Graph &residual_graph,
+                                             std::map<std::pair<int, int>, bool> &blocked_edges,
+                                             int start,
+                                             int end) {
+    // Perform BFS on residual graph once again.
+    std::vector<bool> visited(residual_graph.size(), false);
+    // We actually don't need parent vector.
+    std::vector<int> parent(residual_graph.size(), -1);
+
+    // Perform BFS on residual graph.
+    bfs(residual_graph, blocked_edges, parent, visited, start, end);
+
+    std::vector<std::pair<int, int>> min_cut;
+
+    // Edges that are part of min cut are edges where
+    // - starting node is visited
+    // - ending node is not visited
+    // - edge is blocked (should be anyway)
+    // - edge is from original graph (not from residual graph)
+    for (int i = 0; i < graph.size(); i++) {
+        if (!visited[i]) {
+            // Skip unvisited nodes
+            continue;
+        }
+        // Look over original graph (not residual graph).
+        for (int j: graph[i]) {
+            if (!visited[j] && blocked_edges[{i, j}]) {
+                min_cut.push_back({i, j});
+            }
+        }
+    }
+
+    return min_cut;
+}
+
 // Useful for debugging.
-void print_residual_graph(const Graph& g, int start, int end, const std::map<std::pair<int, int>, bool>& blocked_edges) {
+void print_residual_graph(
+        const Graph &g, int start, int end, const std::map<std::pair<int, int>, bool> &blocked_edges) {
     std::cout << "Residual graph:" << std::endl;
     for (int i = 0; i < g.size(); i++) {
         if (i == start) {
@@ -55,7 +93,7 @@ void print_residual_graph(const Graph& g, int start, int end, const std::map<std
             std::cout << i << " (disk_id: " << (i - 1) / 2 << ", inbound_edge: " << (i % 2 == 0) << "): ";
         }
 
-        for (int j : g[i]) {
+        for (int j: g[i]) {
             if (j != end) {
                 std::cout << j << " (disk_id: " << (j - 1) / 2 << ", blocked: " << blocked_edges.at({i, j}) << "), ";
             } else {
@@ -66,11 +104,8 @@ void print_residual_graph(const Graph& g, int start, int end, const std::map<std
     }
 }
 
-std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const Graph& graph, int start, int end) {
-    // Create new graph which will be used as residual graph, but a little different.
-    // If there is an edge from i to j in original graph, then there is an edge from i to j and from j to i in residual graph.
-    // Map blocked_edges is used to keep track of blocked edges (at start, all reversed edges are blocked, when we find a path
-    // from start to end, we unblock all reverse edges on that path and block all forward edges on that path).
+// Returns residual graph and  map of blocked edges.
+std::pair<Graph, std::map<std::pair<int, int>, bool>> prepare_residual_graph(const Graph &graph) {
     Graph residual_graph = std::vector<std::vector<int>>(graph.size());
     std::map<std::pair<int, int>, bool> blocked_edges;
 
@@ -85,6 +120,17 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const
             blocked_edges[std::pair<int, int>(v, u)] = true;
         }
     }
+    return {residual_graph, blocked_edges};
+}
+
+std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const Graph &graph, int start, int end) {
+    // Create new graph which will be used as residual graph, but a little different.
+    // If there is an edge from i to j in original graph, then there is an edge from i to j and from j to i in residual graph.
+    // Map blocked_edges is used to keep track of blocked edges (at start, all reversed edges are blocked, when we find a path
+    // from start to end, we unblock all reverse edges on that path and block all forward edges on that path).
+
+    // Unpack residual graph and blocked edges.
+    auto [residual_graph, blocked_edges] = prepare_residual_graph(graph);
 
     // Where we came from to each node.
     std::vector<int> parent(graph.size(), -1);
@@ -108,7 +154,8 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const
 
         // Do not forget to reset visited vector.
         std::fill(visited.begin(), visited.end(), false);
-        std:fill(parent.begin(), parent.end(), -1);
+        std:
+        fill(parent.begin(), parent.end(), -1);
 
         // Increase flow by 1.
         flow++;
@@ -124,43 +171,14 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const
     };
 }
 
-int ford_fulkerson_max_flow(const Graph& graph, int start, int end) {
+int ford_fulkerson_max_flow(const Graph &graph, int start, int end) {
     auto [residual_graph, blocked_edges, flow] = ford_fulkerson(graph, start, end);
     return flow;
 }
 
 
 // Returns vector of edges that are part of min cut.
-std::vector<std::pair<int, int>> ford_fulkerson_min_cut(const Graph& graph, int start, int end) {
+std::vector<std::pair<int, int>> ford_fulkerson_min_cut(const Graph &graph, int start, int end) {
     auto [residual_graph, blocked_edges, flow] = ford_fulkerson(graph, start, end);
-
-    // Perform BFS on residual graph once again.
-    std::vector<bool> visited(residual_graph.size(), false);
-    // We actually don't need parent vector.
-    std::vector<int> parent(residual_graph.size(), -1);
-
-    // Perform BFS on residual graph.
-    bfs(residual_graph, blocked_edges, parent, visited, start, end);
-
-    std::vector<std::pair<int, int>> min_cut;
-
-    // Edges that are part of min cut are edges where
-    // - starting node is visited
-    // - ending node is not visited
-    // - edge is blocked (should be anyway)
-    // - edge is from original graph (not from residual graph)
-    for (int i = 0; i < graph.size(); i++) {
-        if (!visited[i]) {
-            // Skip unvisited nodes
-            continue;
-        }
-        // Look over original graph (not residual graph).
-        for (int j : graph[i]) {
-            if (!visited[j] && blocked_edges[{i, j}]) {
-                min_cut.push_back({i, j});
-            }
-        }
-    }
-
-    return min_cut;
+    return get_min_cut(graph, residual_graph, blocked_edges, start, end);
 }
