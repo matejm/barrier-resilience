@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "geometry_objects.hpp"
-#include "graph.hpp"
+#include "utils/geometry_objects.hpp"
+#include "with_graph_construction/graph.hpp"
 
 TEST(TestGraph, TestGraphIndices) {
     const Graph g1 = Graph(6), g2 = Graph(146);
@@ -39,36 +39,36 @@ TEST(TestGraph, TestGraphIndices) {
 TEST(TestGraph, TestObjectsToGraph) {
     // Generic case
     const std::vector<GeometryObject<double>> objects = {
-        Border<double>{-1, true},
-        Disk<double>{Point<double>{0, 0}, 1},
-        Disk<double>{Point<double>{0, 2}, 1},
-        Disk<double>{Point<double>{2, 2}, 1},
-        Disk<double>{Point<double>{4, 2}, 1},
-        Border<double>{5, false}
+            Border<double>{-1, true},
+            Disk<double>{Point<double>{0, 0}, 1},
+            Disk<double>{Point<double>{0, 2}, 1},
+            Disk<double>{Point<double>{2, 2}, 1},
+            Disk<double>{Point<double>{4, 2}, 1},
+            Border<double>{5, false}
     };
 
     Graph graph = objects_to_graph(objects);
     ASSERT_EQ(graph.size(), 6);
     ASSERT_EQ(graph, Graph({
-        {1, 2},
-        {0, 2},
-        {0, 1, 3},
-        {2, 4},
-        {3, 5},
-        {4}
-    }));
+                                   {1, 2},
+                                   {0, 2},
+                                   {0, 1, 3},
+                                   {2, 4},
+                                   {3, 5},
+                                   {4}
+                           }));
 
     // Special case - no disks
     const std::vector<GeometryObject<double>> objects2 = {
-        Border<double>{-1, true},
-        Border<double>{5, false}
+            Border<double>{-1, true},
+            Border<double>{5, false}
     };
     graph = objects_to_graph(objects2);
     ASSERT_EQ(graph.size(), 2);
     ASSERT_EQ(graph, Graph({
-        {},
-        {}
-    }));
+                                   {},
+                                   {}
+                           }));
 }
 
 TEST(TestGraph, TestGenerateExpandedGraph) {
@@ -80,11 +80,11 @@ TEST(TestGraph, TestGenerateExpandedGraph) {
 
     ASSERT_EQ(graph.size(), 4);
     ASSERT_EQ(graph, Graph({
-        {1},
-        {2},
-        {3},
-        {}
-    }));
+                                   {1},
+                                   {2},
+                                   {3},
+                                   {}
+                           }));
 
     // Generic case
     const std::vector<Disk<double>> disks2 = {
@@ -96,14 +96,14 @@ TEST(TestGraph, TestGenerateExpandedGraph) {
 
     ASSERT_EQ(graph.size(), 8);
     ASSERT_EQ(graph, Graph({
-        {1, 3},
-        {2},
-        {3, 5},
-        {4},
-        {1, 5},
-        {6},
-        // Nodes in any single line can be in any order, if tests fail, just change the order
-        {7, 1, 3},
-        {}
-    }));
+                                   {1, 3},
+                                   {2},
+                                   {3, 5},
+                                   {4},
+                                   {1, 5},
+                                   {6},
+                                   // Nodes in any single line can be in any order, if tests fail, just change the order
+                                   {7, 1, 3},
+                                   {}
+                           }));
 }

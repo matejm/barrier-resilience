@@ -1,19 +1,19 @@
 #include <vector>
 #include <iostream>
-#include "geometry_objects.hpp"
-#include "graph.hpp"
+#include "utils/geometry_objects.hpp"
+#include "with_graph_construction/graph.hpp"
 
 int main() {
     // Objects to graph
     auto objects = std::vector<GeometryObject<int>>{
-        Border<int>{0, true},
-        Disk<int>{{0, 0}, 1},
-        Disk<int>{{1, 1}, 1},
-        Disk<int>{{2, 2}, 2},
-        Disk<int>{{3, 3}, 1},
-        Disk<int>{{4, 4}, 1},
-        Disk<int>{{5, 5}, 1},
-        Border<int>{5, false},
+            Border<int>{0, true},
+            Disk<int>{{0, 0}, 1},
+            Disk<int>{{1, 1}, 1},
+            Disk<int>{{2, 2}, 2},
+            Disk<int>{{3, 3}, 1},
+            Disk<int>{{4, 4}, 1},
+            Disk<int>{{5, 5}, 1},
+            Border<int>{5, false},
     };
 
     auto graph = objects_to_graph(static_cast<std::vector<GeometryObject<int>>>(objects));

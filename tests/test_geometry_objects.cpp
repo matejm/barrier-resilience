@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include "geometry_objects.hpp"
+#include "utils/geometry_objects.hpp"
 
 TEST(TestIntersection, DiskIntersectionNormal) {
     auto disks = std::vector<Disk<int>>{
-        {{0, 0}, 1},
-        {{1, 1}, 1},
-        {{2, 2}, 2},
-        {{3, 3}, 1},
+            {{0, 0}, 1},
+            {{1, 1}, 1},
+            {{2, 2}, 2},
+            {{3, 3}, 1},
     };
 
     ASSERT_TRUE(intersects(disks[0], disks[0]));

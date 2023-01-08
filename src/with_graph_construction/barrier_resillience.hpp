@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <iostream>
-#include "geometry_objects.hpp"
+#include "utils/geometry_objects.hpp"
 #include "graph.hpp"
 #include "ford_fulkerson.hpp"
 #include "even_tarjan.hpp"

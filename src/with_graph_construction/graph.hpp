@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <iostream>
-#include "geometry_objects.hpp"
+#include "utils/geometry_objects.hpp"
 
 // Graph represents a graph with nodes and edges.
 // Nodes are represented by integers 0, 1, 2

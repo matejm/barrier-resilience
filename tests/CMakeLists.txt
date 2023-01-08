@@ -14,7 +14,9 @@ add_executable(
         test_geometry_objects.cpp
         test_ford_fulkerson.cpp
         test_graph.cpp
-        test_barrier_resilience.cpp test_even_tarjan.cpp)
+        test_barrier_resilience.cpp
+        test_even_tarjan.cpp
+        data_structure/test_trivial.cpp)
 
 target_link_libraries(
         tests

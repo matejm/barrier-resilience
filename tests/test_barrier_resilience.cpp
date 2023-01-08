@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "barrier_resillience.hpp"
-#include "geometry_objects.hpp"
+#include "with_graph_construction/barrier_resillience.hpp"
+#include "utils/geometry_objects.hpp"
 
 const std::vector<Algorithm> algorithms = {
         Algorithm::FordFulkerson,

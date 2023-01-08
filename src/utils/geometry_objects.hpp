@@ -5,9 +5,14 @@
 #include "utils.hpp"
 
 template<class T>
-struct Point{
+struct Point {
     T x;
     T y;
+
+    // Equality operator.
+    bool operator==(const Point<T> &other) const {
+        return x == other.x && y == other.y;
+    }
 };
 
 // Disk with center and radius
@@ -16,6 +21,11 @@ struct Disk {
 public:
     Point<T> center;
     T radius;
+
+    // Equality operator.
+    bool operator==(const Disk<T> &other) const {
+        return center == other.center && radius == other.radius;
+    }
 };
 
 // Left or right border - vertical segment with given x coordinate
@@ -24,6 +34,11 @@ struct Border {
     T x;
     // Is this left or right border?
     bool left;
+
+    // Equality operator.
+    bool operator==(const Border<T> &other) const {
+        return x == other.x && left == other.left;
+    }
 };
 
 template<class T>
@@ -32,7 +47,7 @@ using GeometryObject = std::variant<Disk<T>, Border<T>>;
 // Intersects returns true if the two disks have a non-empty intersection.
 // (if one disk is contained in the other, they are considered to intersect)
 template<class T>
-bool intersects(const Disk<T>& d1, const Disk<T>& d2) {
+bool intersects(const Disk<T> &d1, const Disk<T> &d2) {
     T dx = d1.center.x - d2.center.x;
     T dy = d1.center.y - d2.center.y;
     // Keep distance squared to avoid sqrt for better numerical stability.
@@ -44,7 +59,7 @@ bool intersects(const Disk<T>& d1, const Disk<T>& d2) {
 
 // Intersection of border and disk.
 template<class T>
-bool intersects(const Disk<T>& d, const Border<T>& b) {
+bool intersects(const Disk<T> &d, const Border<T> &b) {
     if (b.left) {
         // Check if disk intersects left border.
         if (d.center.x <= b.x) {
@@ -64,12 +79,12 @@ bool intersects(const Disk<T>& d, const Border<T>& b) {
 }
 
 template<class T>
-bool intersects(const Border<T>& b, const Disk<T>& d) {
+bool intersects(const Border<T> &b, const Disk<T> &d) {
     return intersects(d, b);
 }
 
 template<class T>
-bool intersects(const Border<T>& b1, const Border<T>& b2) {
+bool intersects(const Border<T> &b1, const Border<T> &b2) {
     if (b1.left == b2.left) {
         // Both borders are left or both are right.
         return true;
@@ -82,28 +97,28 @@ bool intersects(const Border<T>& b1, const Border<T>& b2) {
 }
 
 template<class T>
-bool intersects(const GeometryObject<T>& g1, const GeometryObject<T>& g2) {
-    return g1 | match {
-        [&g2](const Disk<T>& d) {
-            return g2 | match {
-                [&d](const Disk<T>& d2) {
-                    return intersects(d, d2);
-                },
-                [&d](const Border<T>& b) {
-                    return intersects(d, b);
-                }
-            };
-        },
-        [&g2](const Border<T>& b) { 
-            return g2 | match {
-                [&b](const Disk<T>& d) {
-                    return intersects(d, b);
-                },
-                [&b](const Border<T>& b2) {
-                    return intersects(b, b2);
-                }
-            };
-         },
+bool intersects(const GeometryObject<T> &g1, const GeometryObject<T> &g2) {
+    return g1 | match{
+            [&g2](const Disk<T> &d) {
+                return g2 | match{
+                        [&d](const Disk<T> &d2) {
+                            return intersects(d, d2);
+                        },
+                        [&d](const Border<T> &b) {
+                            return intersects(d, b);
+                        }
+                };
+            },
+            [&g2](const Border<T> &b) {
+                return g2 | match{
+                        [&b](const Disk<T> &d) {
+                            return intersects(d, b);
+                        },
+                        [&b](const Border<T> &b2) {
+                            return intersects(b, b2);
+                        }
+                };
+            },
     };
 }
 

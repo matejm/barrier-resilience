@@ -1,19 +1,19 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "geometry_objects.hpp"
-#include "barrier_resillience.hpp"
-#include "visualize.hpp"
+#include "utils/geometry_objects.hpp"
+#include "with_graph_construction/barrier_resillience.hpp"
+#include "utils/visualize.hpp"
 
 int main() {
     auto disks = std::vector<Disk<int>>{
-        {{1, -1}, 2},
-        {{1, 1}, 2},
-        {{4, 0}, 2},
+            {{1, -1}, 2},
+            {{1, 1},  2},
+            {{4, 0},  2},
     };
 
     int left = 0,
-        right = 5;
+            right = 5;
 
     std::cout << barrier_resilience_number_of_disks(disks, left, right) << std::endl;
 

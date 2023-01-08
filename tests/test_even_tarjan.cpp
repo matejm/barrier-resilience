@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "even_tarjan.hpp"
+#include "with_graph_construction/even_tarjan.hpp"
 
 TEST(TestEvenTarjan, TestDfsOnBfsTree) {
     Graph t = {
