@@ -23,7 +23,6 @@ public:
     }
 
     // Given a disk D (not necessarily from the structure), return a disk D' that intersects D (if any).
-    // If none exists, return null pointer.
     std::optional<Disk<T>> intersecting_disk(const Disk<T> &disk) const {
         for (const auto &d: disks) {
             if (intersects(d, disk)) {

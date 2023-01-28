@@ -11,11 +11,11 @@ enable_testing()
 
 add_executable(
         tests
-        test_geometry_objects.cpp
-        test_ford_fulkerson.cpp
-        test_graph.cpp
-        test_barrier_resilience.cpp
-        test_even_tarjan.cpp
+        utils/test_geometry_objects.cpp
+        with_graph_construction/test_ford_fulkerson.cpp
+        with_graph_construction/test_graph.cpp
+        with_graph_construction/test_barrier_resilience.cpp
+        with_graph_construction/test_even_tarjan.cpp
         data_structure/test_trivial.cpp)
 
 target_link_libraries(
