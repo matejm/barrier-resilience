@@ -14,13 +14,13 @@ template<class T>
 class DataStructure {
 public:
     // Reconstruct data structure from vector of disks.
-    virtual void rebuild(const std::vector<Disk<T>> &disks) = 0;
+    virtual void rebuild(const std::vector<GeometryObject<T>> &objects) = 0;
 
-    // Given a disk D (not necessarily from the structure), return a disk D' that intersects D (if any).
-    virtual std::optional<Disk<T>> intersecting_disk(const Disk<T> &disk) const = 0;
+    // Given a disk D (not necessarily from the structure), return structure that intersects D (if any).
+    virtual std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) const = 0;
 
-    // Delete disk D (if it exists) from the structure.
-    virtual void delete_disk(const Disk<T> &disk) = 0;
+    // Delete object (if it exists) from the structure.
+    virtual void delete_object(const GeometryObject<T> &o) = 0;
 };
 
 #endif //BARRIER_RESILIENCE_DATA_STRUCTURE_HPP

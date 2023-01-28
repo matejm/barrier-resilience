@@ -3,6 +3,7 @@
 
 #include <variant>
 #include "utils.hpp"
+#include "transformed_graph.hpp"
 
 template<class T>
 struct Point {
@@ -18,13 +19,37 @@ struct Point {
 // Disk with center and radius
 template<class T>
 struct Disk {
+    // Helper value, used to identify disks in the data structure.
+    int index;
 public:
     Point<T> center;
     T radius;
 
+    Disk(Point<T> center, T radius) : center(center), radius(radius) {
+        // Set index to -1, will be set later if needed.
+        index = -1;
+    }
+
+    void set_index(int index_) {
+        this->index = index_;
+    }
+
+    int get_index() const {
+        return index;
+    }
+
     // Equality operator.
     bool operator==(const Disk<T> &other) const {
         return center == other.center && radius == other.radius;
+    }
+
+    // Convert disk to two vertices in a transformed graph G'.
+    // (inbound and outbound vertex)
+    std::pair<TransformedVertex, TransformedVertex> to_transformed_vertices() const {
+        return {
+                disk_to_transformed_vertex(this, true),
+                disk_to_transformed_vertex(this, false),
+        };
     }
 };
 
@@ -43,6 +68,16 @@ struct Border {
 
 template<class T>
 using GeometryObject = std::variant<Disk<T>, Border<T>>;
+
+template<class T>
+bool is_disk(const GeometryObject<T> &object) {
+    return std::holds_alternative<Disk<T>>(object);
+}
+
+template<class T>
+bool is_border(const GeometryObject<T> &object) {
+    return std::holds_alternative<Border<T>>(object);
+}
 
 // Intersects returns true if the two disks have a non-empty intersection.
 // (if one disk is contained in the other, they are considered to intersect)
@@ -121,5 +156,11 @@ bool intersects(const GeometryObject<T> &g1, const GeometryObject<T> &g2) {
             },
     };
 }
+
+template<class T>
+TransformedVertex disk_to_transformed_vertex(const Disk<T> &disk, bool inbound) {
+    return {disk.get_index(), inbound};
+}
+
 
 #endif // BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP

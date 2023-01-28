@@ -3,54 +3,71 @@
 #include <vector>
 
 TEST(TestTrivialDataStructure, TestQuery) {
-    const auto disks = std::vector<Disk<int>>{
-            {{0, 0}, 1},
-            {{2, 2}, 1},
+    const auto objects = std::vector<GeometryObject<int>>{
+            Disk<int>{{0, 0}, 1},
+            Disk<int>{{2, 2}, 1},
+            Border<int>{10, false},
     };
 
-    auto t = Trivial<int>(disks);
+    auto t = Trivial<int>();
+    t.rebuild(objects);
 
-    // Query disks and check if we always get intersecting disk
-    ASSERT_EQ(t.intersecting_disk({{0, 0}, 1}), disks[0]);
-    ASSERT_EQ(t.intersecting_disk({{-1, 0}, 1}), disks[0]);
-    ASSERT_EQ(t.intersecting_disk({{2, 0}, 1}), disks[0]);
-    ASSERT_EQ(t.intersecting_disk({{4, 2}, 1}), disks[1]);
-    ASSERT_EQ(t.intersecting_disk({{5, 2}, 2}), disks[1]);
-    ASSERT_EQ(t.intersecting_disk({{5, 2}, 2}), disks[1]);
-    ASSERT_EQ(t.intersecting_disk({{-5, -5}, 8}), disks[0]);
+    // Query objects and check if we always get intersecting disk
+    ASSERT_EQ(t.intersecting(Disk<int>{{0, 0}, 1}), objects[0]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-1, 0}, 1}), objects[0]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{2, 0}, 1}), objects[0]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{4, 2}, 1}), objects[1]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{5, 2}, 2}), objects[1]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{5, 2}, 2}), objects[1]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-5, -5}, 8}), objects[0]);
 
-    // Query disks that don't intersect any disk
-    ASSERT_EQ(t.intersecting_disk({{-2, -2}, 1}), std::nullopt);
-    ASSERT_EQ(t.intersecting_disk({{5, 5}, 1}), std::nullopt);
-    ASSERT_EQ(t.intersecting_disk({{100, 0}, 50}), std::nullopt);
+    // Check intersection with border
+    ASSERT_EQ(t.intersecting(Border<int>{9, false}), objects[2]);
+    ASSERT_EQ(t.intersecting(Border<int>{100, false}), objects[2]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{9, 0}, 2}), objects[2]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{100, 0}, 2}), objects[2]);
+
+    // Query objects that don't intersect any disk or border
+    ASSERT_EQ(t.intersecting(Disk<int>{{-2, -2}, 1}), std::nullopt);
+    ASSERT_EQ(t.intersecting(Disk<int>{{5, 5}, 1}), std::nullopt);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 50}), std::nullopt);
 }
 
 TEST(TestTrivialDataStructure, TestDelection) {
-    const auto disks = std::vector<Disk<int>>{
-            {{0,   0},   1},
-            {{2,   2},   1},
-            {{4,   4},   1},
-            {{100, 100}, 1},
+    const auto objects = std::vector<GeometryObject<int>>{
+            Disk<int>{{0, 0}, 1},
+            Disk<int>{{2, 2}, 1},
+            Disk<int>{{4, 4}, 1},
+            Disk<int>{{100, 100}, 1},
+            Border<int>{-100, true},
     };
 
-    auto t = Trivial<int>(disks);
+    auto t = Trivial<int>();
+    t.rebuild(objects);
 
-    // Delete disks and check if they are deleted
-    t.delete_disk({{0, 0}, 1});
-    ASSERT_EQ(t.intersecting_disk({{0, 0}, 1}), std::nullopt);
-    ASSERT_EQ(t.intersecting_disk({{2, 1}, 1}), disks[1]);
-    ASSERT_EQ(t.intersecting_disk({{4, 5}, 1}), disks[2]);
-    ASSERT_EQ(t.intersecting_disk({{100, 101}, 1}), disks[3]);
+    // Delete objects and check if they are deleted
+    t.delete_object(Disk<int>{{0, 0}, 1});
+    ASSERT_EQ(t.intersecting(Disk<int>{{0, 0}, 1}), std::nullopt);
+    ASSERT_EQ(t.intersecting(Disk<int>{{2, 1}, 1}), objects[1]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{4, 5}, 1}), objects[2]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{100, 101}, 1}), objects[3]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 1}), objects[4]);
 
-    t.delete_disk({{2, 2}, 1});
-    ASSERT_EQ(t.intersecting_disk({{2, 1}, 1}), std::nullopt);
-    ASSERT_EQ(t.intersecting_disk({{4, 5}, 1}), disks[2]);
-    ASSERT_EQ(t.intersecting_disk({{100, 101}, 1}), disks[3]);
+    t.delete_object(Disk<int>{{2, 2}, 1});
+    ASSERT_EQ(t.intersecting(Disk<int>{{2, 1}, 1}), std::nullopt);
+    ASSERT_EQ(t.intersecting(Disk<int>{{4, 5}, 1}), objects[2]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{100, 101}, 1}), objects[3]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 1}), objects[4]);
 
-    t.delete_disk({{4, 4}, 1});
-    ASSERT_EQ(t.intersecting_disk({{4, 5}, 1}), std::nullopt);
-    ASSERT_EQ(t.intersecting_disk({{100, 101}, 1}), disks[3]);
+    t.delete_object(Disk<int>{{4, 4}, 1});
+    ASSERT_EQ(t.intersecting(Disk<int>{{4, 5}, 1}), std::nullopt);
+    ASSERT_EQ(t.intersecting(Disk<int>{{100, 101}, 1}), objects[3]);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 1}), objects[4]);
 
-    t.delete_disk({{100, 100}, 1});
-    ASSERT_EQ(t.intersecting_disk({{100, 101}, 1}), std::nullopt);
+    t.delete_object(Disk<int>{{100, 100}, 1});
+    ASSERT_EQ(t.intersecting(Disk<int>{{100, 101}, 1}), std::nullopt);
+    ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 1}), objects[4]);
+
+    t.delete_object(Border<int>{-100, true});
+    ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 1}), std::nullopt);
 }

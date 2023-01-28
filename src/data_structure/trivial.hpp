@@ -12,32 +12,29 @@
 template<class T>
 class Trivial : public DataStructure<T> {
 private:
-    std::vector<Disk<T>> disks;
+    std::vector<GeometryObject<T>> objects;
 
 public:
-    // Create data structure from vector of disks.
-    Trivial(const std::vector<Disk<T>> &disks_) : disks(disks_) {}
-
-    void rebuild(const std::vector<Disk<T>> &disks_) {
-        disks = disks_;
+    void rebuild(const std::vector<GeometryObject<T>> &objects_) {
+        objects = objects_;
     }
 
     // Given a disk D (not necessarily from the structure), return a disk D' that intersects D (if any).
-    std::optional<Disk<T>> intersecting_disk(const Disk<T> &disk) const {
-        for (const auto &d: disks) {
-            if (intersects(d, disk)) {
-                return {d};
+    std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) const {
+        for (const auto &o: objects) {
+            if (intersects(o, object)) {
+                return {o};
             }
         }
         return {};
     }
 
-    // Delete disk D (if it exists) from the structure.
-    void delete_disk(const Disk<T> &disk) {
-        for (auto it = disks.begin(); it != disks.end(); ++it) {
-            // We can use equality because we implemented custom equality operator for Disk.
-            if (*it == disk) {
-                disks.erase(it);
+    // Delete object (if it exists) from the structure.
+    void delete_object(const GeometryObject<T> &o) {
+        for (auto it = objects.begin(); it != objects.end(); ++it) {
+            // We can use equality because we implemented custom equality operator for geometry objects.
+            if (*it == o) {
+                objects.erase(it);
                 return;
             }
         }
