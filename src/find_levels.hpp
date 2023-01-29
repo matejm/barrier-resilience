@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <unordered_map>
-#include <ranges>
 #include "utils/geometry_objects.hpp"
 #include "utils/transformed_graph.hpp"
 #include "data_structure/data_structure.hpp"
