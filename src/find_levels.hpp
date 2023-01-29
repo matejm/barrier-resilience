@@ -48,16 +48,11 @@ FindLevelsResult find_levels(
 
     for (const auto &path: paths) {
         for (unsigned int i = 0; i < path.size(); i++) {
-            const auto e = &path[i];
-
+            const auto& e = path[i];
             // Add previous vertex
-            if (i > 0) {
-                prev[e->to] = e->from;
-            }
+            prev[e.to] = e.from;
             // Add next vertex
-            if (i < path.size() - 1) {
-                next[e->from] = e->to;
-            }
+            next[e.from] = e.to;
         }
     }
 
@@ -229,6 +224,15 @@ FindLevelsResult find_levels(
                     levels[u] = i;
                     current_layer_vertices.push_back(u);
                 }
+            }
+
+            // If we found the sink - clear what we did in current layer and break
+            if (found_sink) {
+                for (const auto &v: current_layer_vertices) {
+                    levels.erase(v);
+                }
+                current_layer_vertices.clear();
+                break;
             }
         }
 
