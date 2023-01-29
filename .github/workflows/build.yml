@@ -8,11 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     env:
-      CXX: g++-12
-      CC: gcc-12
+      CXX: g++-10
+      CC: gcc-10
 
     steps:
       - uses: actions/checkout@v3
