@@ -28,4 +28,6 @@ int main() {
     std::ofstream SvgFile("preview.svg");
     SvgFile << problem_to_svg(disks, left, right, to_remove) << std::endl;
     SvgFile.close();
+
+    return 0;
 }
