@@ -154,7 +154,6 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const
 
         // Do not forget to reset visited vector.
         std::fill(visited.begin(), visited.end(), false);
-        std:
         fill(parent.begin(), parent.end(), -1);
 
         // Increase flow by 1.
