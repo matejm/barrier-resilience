@@ -10,6 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-20.04
 
+    env:
+      CXX: g++-10
+      CC: gcc-10
+
     steps:
       - uses: actions/checkout@v3
       - name: Configure CMake
