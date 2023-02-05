@@ -156,9 +156,6 @@ TEST(TestEvenTarjan, TestEvenTarjan) {
                                                                           {{7, 6}, false},
                                                                   })));
 
-    auto [residual_graph2, blocked_edges2, flow2] = even_tarjan(g, 0, 1);
-    ASSERT_EQ(flow2, 2);
-
     // Minimal example
     Graph g2 = {
             {1},

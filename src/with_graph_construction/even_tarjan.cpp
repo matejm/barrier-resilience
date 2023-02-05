@@ -14,19 +14,21 @@ Graph create_bfs_tree(std::vector<int> parent) {
     return g;
 }
 
-void dfs(const Graph &g, std::vector<bool> &visited, int start,
+// Returns true if found a single path -> dfs must be terminated immediately.
+bool dfs(const Graph &g, std::vector<bool> &visited, int start,
          int end, std::vector<int> &path, std::vector<std::vector<int>> &paths) {
     path.push_back(start);
 
     if (start == end) {
         // We found a path from start to end.
+
         // Copy path to paths.
         std::vector<int> path_copy(path);
         paths.push_back(path_copy);
+        path.clear();
 
-        // Remove last element from path.
-        path.pop_back();
-        return;
+        // All vertices in path are already marked as visited, so we can terminate dfs.
+        return true;
     }
 
     // Check all neighbours.
@@ -37,23 +39,43 @@ void dfs(const Graph &g, std::vector<bool> &visited, int start,
                 visited[v] = true;
             }
             // Recursively call dfs.
-            dfs(g, visited, v, end, path, paths);
+            bool found_path = dfs(g, visited, v, end, path, paths);
+
+            if (found_path) {
+                // We found a path, so we can terminate dfs.
+                return true;
+            }
         }
     }
 
     // Remove start from path.
     path.pop_back();
+    return false;
 }
 
 
-// DFS on BFS tree. When we find end node, we add the path to the set of paths.
+// Perform DFS on BFS tree. When we find end node, we add the path to the set of paths.
+//
+// [ WARNING! ] Does not work if path from start to end has length 1. This happens because we don't mark start and end
+// nodes as visited. This is not a problem, because in case of disk intersection, we will always have path from start to
+// end with length at least 3 (start -> disk_in -> disk_out -> end).
+//
+// Returns set of paths from start to end. Set of paths is a blocking family.
 std::vector<std::vector<int>> dfs_on_bfs_tree(const Graph &g, int start, int end) {
     std::vector<std::vector<int>> paths;
-    std::vector<int> path;
     std::vector<bool> visited(g.size(), false);
 
     // Run DFS on BFS tree.
-    dfs(g, visited, start, end, path, paths);
+    while (true) {
+        // Start DFS from start node.
+        std::vector<int> path;
+        bool found_path = dfs(g, visited, start, end, path, paths);;
+
+        if (!found_path) {
+            // We didn't find any path, so we can terminate.
+            break;
+        }
+    }
 
     return paths;
 }
