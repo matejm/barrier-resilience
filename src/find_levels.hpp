@@ -12,13 +12,21 @@ struct FindLevelsResult {
     std::unordered_map<TransformedVertex, int, TransformedVertexHash> levels;
     // True if there is a path from left border to right border.
     bool reachable;
+    // Total distance to the sink, if reachable.
+    int distance;
+    // Map of previous vertices on the path from source to sink.
+    // Warning: prev[sink] might be incorrect (we can get to sink from multiple vertices).
+    std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> prev;
+    // Map of next vertices on the path from source to sink.
+    // Warning: next[source] might be incorrect (there can be multiple paths from source to sink).
+    std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> next;
 };
 
 // Find BFS distance from source for each vertex v of a graph G' (lambda(v) in the article).
 // Works by performing BFS from source in the residual graph R(G', paths) without explicit construction of the edge set
 // of R.
 
-template<class T>
+template<class T, template<typename = T> class DS>
 FindLevelsResult find_levels(
         // Set of edge disjoint paths in G'.
         const std::vector<Path> &paths,
@@ -26,9 +34,7 @@ FindLevelsResult find_levels(
         std::vector<Disk<T>> &disks,
         // Left and right boundary of the available space
         const int left_border_x,
-        const int right_border_x,
-        // Data structure implementation
-        DataStructure<T> &ds
+        const int right_border_x
 ) {
     // Set index to each disk (so we can track them in the data structure)
     for (int i = 0; i < disks.size(); i++) {
@@ -46,8 +52,7 @@ FindLevelsResult find_levels(
     std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> next;
 
     for (const auto &path: paths) {
-        for (unsigned int i = 0; i < path.size(); i++) {
-            const auto& e = path[i];
+        for (auto e : path) {
             // Add previous vertex
             prev[e.to] = e.from;
             // Add next vertex
@@ -62,6 +67,7 @@ FindLevelsResult find_levels(
     std::vector<GeometryObject<T>> objects(disks.begin(), disks.end());
     objects.push_back(right_border);
 
+    DS<T> ds;
     ds.rebuild(objects);
 
     // Find layer 1 - query datastructure for disks intersecting with the left border
@@ -94,7 +100,7 @@ FindLevelsResult find_levels(
     // If we found the sink, we are done.
     if (found_sink) {
         levels[sink] = 1;
-        return {levels, true};
+        return {levels, true, -1, prev, next};
     }
 
     // Convert neighboring geometry objects to inbound vertices (there are only inbound vertices on layer 1)
@@ -239,7 +245,14 @@ FindLevelsResult find_levels(
         last_layer_vertices = current_layer_vertices;
     }
 
-    return {levels, found_sink};
+    int distance;
+    if (found_sink) {
+        distance = levels[sink];
+    } else {
+        distance = -1;
+    }
+
+    return {levels, found_sink, distance, prev, next};
 }
 
 #endif //BARRIER_RESILIENCE_FIND_LEVELS_HPP
