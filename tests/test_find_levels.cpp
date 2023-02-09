@@ -5,7 +5,6 @@
 
 TEST(TestFindLevels, TestEmptyPaths) {
     const auto paths = std::vector<Path>{};
-    auto ds = Trivial<int>();
 
     // Trivial disk layout
     auto disks = std::vector<Disk<int>>{
@@ -15,7 +14,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     int left_border = -1;
     int right_border = 2;
 
-    auto r = find_levels(paths, disks, left_border, right_border, ds);
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 4  for disks
@@ -32,6 +31,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     ASSERT_EQ((r.levels[TransformedVertex{1, false}]), 4);
     // Expect level of t to be 5
     ASSERT_EQ((r.levels[sink]), 5);
+    ASSERT_EQ(r.distance, 5);
 
     // Another trivial disk layout
     disks = std::vector<Disk<int>>{
@@ -42,7 +42,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     left_border = -1;
     right_border = 3;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 6 for disks
@@ -62,6 +62,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     ASSERT_EQ((r.levels[TransformedVertex{2, false}]), 4);
     // Expect level of t to be 5
     ASSERT_EQ((r.levels[sink]), 5);
+    ASSERT_EQ(r.distance, 5);
 
     // Another layout
     disks = std::vector<Disk<int>>{
@@ -75,7 +76,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     left_border = -1;
     right_border = 6;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 12 for disks
@@ -103,6 +104,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     ASSERT_EQ((r.levels[TransformedVertex{5, false}]), 6);
     // Expect level of t to be 7
     ASSERT_EQ((r.levels[sink]), 7);
+    ASSERT_EQ(r.distance, 7);
 
     // Another layout
     disks = std::vector<Disk<int>>{
@@ -120,7 +122,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     left_border = 0;
     right_border = 6;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 16 for disks
@@ -156,6 +158,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     ASSERT_EQ((r.levels[TransformedVertex{7, false}]), 10);
     // Expect level of t to be 11
     ASSERT_EQ((r.levels[sink]), 11);
+    ASSERT_EQ(r.distance, 11);
 
     // Another layout
     disks = std::vector<Disk<int>>{
@@ -166,7 +169,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
     left_border = -3;
     right_border = 3;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 2 for only reachable disk
@@ -180,12 +183,12 @@ TEST(TestFindLevels, TestEmptyPaths) {
     ASSERT_EQ((r.levels[TransformedVertex{2, false}]), 2);
     // Expect level of t to be 3
     ASSERT_EQ((r.levels[sink]), 3);
+    ASSERT_EQ(r.distance, 3);
 }
 
 TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
     // Check if longer path is dropped when we reach sink
     const auto paths = std::vector<Path>{};
-    auto ds = Trivial<int>();
 
     auto disks = std::vector<Disk<int>>{
             {{3, 15}, 3},
@@ -196,7 +199,7 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
     int left_border = 0;
     int right_border = 6;
 
-    auto r = find_levels(paths, disks, left_border, right_border, ds);
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and only 4 for disks
@@ -213,6 +216,7 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
     ASSERT_EQ((r.levels[TransformedVertex{1, false}]), 2);
     // Expect level of t to be 3. No other vertices should be present on the level
     ASSERT_EQ((r.levels[sink]), 3);
+    ASSERT_EQ(r.distance, 3);
 
     // Another layout
     disks = std::vector<Disk<int>>{
@@ -229,7 +233,7 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
     left_border = 0;
     right_border = 6;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 12 for disks
@@ -260,12 +264,12 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
     ASSERT_EQ((r.levels[TransformedVertex{5, false}]), 8);
     // Expect level of t to be 9. No other vertices should be present on the level
     ASSERT_EQ((r.levels[sink]), 9);
+    ASSERT_EQ(r.distance, 9);
 }
 
 TEST(TestFindLevels, TestEmptyPathsUnreachable) {
     // Check if unreachable is detected correctly
     const auto paths = std::vector<Path>{};
-    auto ds = Trivial<int>();
 
     auto disks = std::vector<Disk<int>>{
             {{1, 0}, 1},
@@ -275,7 +279,7 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
     int left_border = 0;
     int right_border = 7;
 
-    auto r = find_levels(paths, disks, left_border, right_border, ds);
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect levels for vertex s and only 4 for disks
@@ -293,6 +297,7 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
     ASSERT_EQ((r.levels[TransformedVertex{1, false}]), 4);
     // No level for t
     ASSERT_TRUE(r.levels.find(sink) == r.levels.end());
+    ASSERT_EQ(r.distance, -1);
 
     // Another layout
     disks = std::vector<Disk<int>>{
@@ -308,7 +313,7 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
     left_border = 0;
     right_border = 7;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect levels for vertex s and 10 for disks
@@ -334,12 +339,10 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
     ASSERT_EQ((r.levels[TransformedVertex{2, false}]), 6);
     // No level for t
     ASSERT_TRUE(r.levels.find(sink) == r.levels.end());
+    ASSERT_EQ(r.distance, -1);
 }
 
 TEST(TestFindLevels, TestUnreachable) {
-    // Check if reachable is detected correctly when there is a path
-    auto ds = Trivial<int>();
-
     // Simple path, will be unreachable because of blocking path
     auto disks = std::vector<Disk<int>>{
             {{1, 0}, 1},
@@ -358,12 +361,13 @@ TEST(TestFindLevels, TestUnreachable) {
             }
     };
 
-    auto r = find_levels(paths, disks, left_border, right_border, ds);
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect only level for s
     ASSERT_EQ(r.levels.size(), 1);
     ASSERT_EQ(r.levels[source], 0);
+    ASSERT_EQ(r.distance, -1);
 
     // Two possible paths merge into one, which is blocked
     disks = std::vector<Disk<int>>{
@@ -374,7 +378,7 @@ TEST(TestFindLevels, TestUnreachable) {
     left_border = 0;
     right_border = 7;
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect levels for vertex s and 5 for one reachable disks
@@ -393,12 +397,10 @@ TEST(TestFindLevels, TestUnreachable) {
     ASSERT_EQ((r.levels[TransformedVertex{0, true}]), 5);
     // No level for t
     ASSERT_TRUE(r.levels.find(sink) == r.levels.end());
+    ASSERT_EQ(r.distance, -1);
 }
 
 TEST(TestFindLevels, TestReachable) {
-    // Check if reachable is detected correctly when there is a path
-    auto ds = Trivial<int>();
-
     // Two possible ways to go, one is blocked
     auto disks = std::vector<Disk<int>>{
             {{1, 0}, 1},
@@ -419,7 +421,7 @@ TEST(TestFindLevels, TestReachable) {
             }
     };
 
-    auto r = find_levels(paths, disks, left_border, right_border, ds);
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 4 for reachable disks
@@ -437,6 +439,7 @@ TEST(TestFindLevels, TestReachable) {
     ASSERT_EQ((r.levels[TransformedVertex{3, false}]), 4);
     // L[5]
     ASSERT_EQ(r.levels[sink], 5);
+    ASSERT_EQ(r.distance, 5);
 
     // Possible to go back on some edges (backwards on path)
     disks = std::vector<Disk<int>>{
@@ -462,7 +465,7 @@ TEST(TestFindLevels, TestReachable) {
             }
     };
 
-    r = find_levels(paths, disks, left_border, right_border, ds);
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and a lot for reachable disks
@@ -491,12 +494,11 @@ TEST(TestFindLevels, TestReachable) {
     ASSERT_EQ((r.levels[TransformedVertex{5, false}]), 8);
     // L[9]
     ASSERT_EQ(r.levels[sink], 9);
+    ASSERT_EQ(r.distance, 9);
 }
 
 TEST(TestFindLevels, TestLongerPathDropped) {
     // Check if other levels are dropped when we get to sink
-    auto ds = Trivial<int>();
-
     // Two possible ways to go, one is blocked
     auto disks = std::vector<Disk<int>>{
             // 2 disk path
@@ -518,7 +520,7 @@ TEST(TestFindLevels, TestLongerPathDropped) {
             }
     };
 
-    auto r = find_levels(paths, disks, left_border, right_border, ds);
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 4 for reachable disks (more than 4, but only 4 are reachable before reaching sink)
@@ -534,4 +536,5 @@ TEST(TestFindLevels, TestLongerPathDropped) {
     ASSERT_EQ((r.levels[TransformedVertex{3, false}]), 2);
     // L[3] - reached sink
     ASSERT_EQ(r.levels[sink], 3);
+    ASSERT_EQ(r.distance, 3);
 }
