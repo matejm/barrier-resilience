@@ -538,3 +538,33 @@ TEST(TestFindLevels, TestLongerPathDropped) {
     ASSERT_EQ(r.levels[sink], 3);
     ASSERT_EQ(r.distance, 3);
 }
+
+// Test which helped me find a bug in the algorithm.
+TEST(TestFindLevels, AdditionalTests) {
+    const auto paths = std::vector<Path>{};
+
+    // Trivial disk layout
+    auto disks = std::vector<Disk<int>>{
+            {{4, 10}, 1},
+            {{0, 0},  1},
+            {{2, 0},  1},
+            {{2, 10}, 1},
+            {{2, 2},  1},
+            {{2, -2}, 1},
+            {{0, 10}, 1},
+            {{2, 12}, 1},
+            {{2, 8},  1},
+    };
+    int left_border = -1;
+    int right_border = 5;
+
+    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    ASSERT_TRUE(r.reachable);
+
+    r = find_levels<int, Trivial>(paths, disks, left_border - 1, right_border);
+    ASSERT_FALSE(r.reachable);
+
+    r = find_levels<int, Trivial>(paths, disks, left_border, right_border + 1);
+    ASSERT_FALSE(r.reachable);
+
+}

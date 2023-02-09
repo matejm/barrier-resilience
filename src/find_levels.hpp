@@ -202,10 +202,18 @@ FindLevelsResult find_levels(
                     }
                 }
 
-                // If we found the sink, we are done.
-                // If there are no neighbors, we are done.
-                if (found_sink || neighbors.empty()) {
+                // If we found the sink - clear what we did in current layer and break
+                if (found_sink) {
+                    for (const auto &v: current_layer_vertices) {
+                        levels.erase(v);
+                    }
+                    current_layer_vertices.clear();
                     break;
+                }
+
+                // If there are no neighbors, go to the next vertex
+                if (neighbors.empty()) {
+                    continue;
                 }
 
                 // Convert neighboring geometry objects to inbound vertices
@@ -229,15 +237,6 @@ FindLevelsResult find_levels(
                     levels[u] = i;
                     current_layer_vertices.push_back(u);
                 }
-            }
-
-            // If we found the sink - clear what we did in current layer and break
-            if (found_sink) {
-                for (const auto &v: current_layer_vertices) {
-                    levels.erase(v);
-                }
-                current_layer_vertices.clear();
-                break;
             }
         }
 

@@ -227,7 +227,6 @@ std::vector<Path> find_blocking_family(
     }
 
     // Found a blocking family
-    std::cout << "Found a blocking family of size " << new_paths.size() << std::endl;
     return new_paths;
 }
 
