@@ -28,28 +28,26 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
         const std::function<bool(Disk<T>)> &has_edge_to_sink,
         std::vector<TransformedVertex> &current_path) {
 
-    // Ignore if already explored
-    if (explored.find(v) != explored.end()) {
-        return std::nullopt;
-    }
-
     // Add vertex to path
     current_path.push_back(v);
-    std::optional<std::vector<TransformedVertex>> path = std::nullopt;
+    std::optional<std::vector<TransformedVertex>> path;
 
     if (current_level % 2 == 1) {
         // Odd level (v is inbound vertex)
-        if (prev.find(v) == prev.end()) {
+        if (!prev.contains(v)) {
             // Inbound vertex v is not on a path -> continue DFS at outbound vertex of same disk
-
-            path = dfs_explore(ds, disks, explored, prev, next,
-                               TransformedVertex{v.disk_index, false}, current_level + 1,
-                               sink_level, left_border, has_edge_to_sink, current_path);
+            auto u = TransformedVertex{v.disk_index, false};
+            if (!explored[u]) {
+                explored[u] = true;
+                path = dfs_explore(ds, disks, explored, prev, next,
+                                   u, current_level + 1,
+                                   sink_level, left_border, has_edge_to_sink, current_path);
+            }
         } else {
             // Inbound vertex v is on a path -> go back to previous vertex (if not explored yet)
             auto p = prev[v];
-            if (explored.find(p) == explored.end()) {
-                current_path.push_back(v);
+            if (!explored[p]) {
+                explored[p] = true;
                 path = dfs_explore(ds, disks, explored, prev, next,
                                    p, current_level + 1,
                                    sink_level, left_border, has_edge_to_sink, current_path);
@@ -65,68 +63,75 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
             // - edge (v, sink) should not be blocked - next[v] should not be sink.
             if (has_edge_to_sink(disks[v.disk_index]) && next[v] != sink) {
                 // We can get directly to sink - found path
-                current_path.push_back(sink);
-                // Can return here, no need to clean-up current_path, DFS will return anyway as we found path.
-                return current_path;
+                // Copy current_path to path
+                auto p = std::vector<TransformedVertex>(current_path);
+                p.push_back(sink);
+
+                path = {p};
             }
         } else {
             // We are exploring outbound vertex v.
             // This case also includes source vertex (which is always outbound).
 
             // First check if v is on a path
-            if (prev.find(v) != prev.end()) {
+            if (prev.contains(v)) {
                 // Then next vertex is inbound vertex of same disk (go back)
                 auto v_in = TransformedVertex{v.disk_index, true};
-                if (explored.find(v_in) == explored.end()) {
+                if (!explored[v_in]) {
                     // Remove disk from data structure[current_level + 1]
                     ds[current_level + 1].delete_object(disks[v.disk_index]);
 
-                    current_path.push_back(v);
+                    explored[v_in] = true;
                     path = dfs_explore(ds, disks, explored, prev, next,
                                        v_in, current_level + 1,
                                        sink_level, left_border, has_edge_to_sink, current_path);
                 }
             }
 
-            // If nothing found, then explore all other connections from v
-            if (!path.has_value()) {
-                // Explore all other connections from v (that are not on paths)
-                // Query data structure for intersecting disks
+            // Explore all other connections from v (that are not on paths)
+            // Query data structure for intersecting disks
+            bool is_source = v == source;
 
-                bool is_source = v == source;
+            // If nothing found, then explore all other connections from v (if we found path, we won't enter this loop)
+            while (!path.has_value()) {
+                // Check if disk of v is intersected by any disk in data structure[current_level + 1]
+                // If v is source, then compute intersection with left border
+                auto r = is_source
+                         ? ds[current_level + 1].intersecting(left_border)
+                         : ds[current_level + 1].intersecting(disks[v.disk_index]);
 
-                while (!path.has_value()) {
-                    // Check if disk of v is intersected by any disk in data structure[current_level + 1]
-                    // If v is source, then compute intersection with left border
-                    auto r = is_source
-                             ? ds[current_level + 1].intersecting(left_border)
-                             : ds[current_level + 1].intersecting(disks[v.disk_index]);
-
-                    if (!r.has_value()) {
-                        // No intersecting disk found
-                        break;
-                    }
-                    // Cannot be other than disk (cannot be border)
-                    std::variant<Disk<T>, Border<T>> disk_or_border = r.value();
-                    auto disk = std::get<Disk<T>>(disk_or_border);
-
-                    // Inbound vertex of disk, we have an edge v->u in residual graph.
-                    // This edge is not in any path, see article for details.
-                    auto u = TransformedVertex{disk.index, true};
-
-                    path = dfs_explore(ds, disks, explored, prev, next,
-                                       u, current_level + 1,
-                                       sink_level, left_border, has_edge_to_sink, current_path);
+                if (!r.has_value()) {
+                    // No intersecting disk found, done with this vertex
+                    break;
                 }
+
+                // Cannot be other than disk (cannot be border)
+                std::variant<Disk<T>, Border<T>> disk_or_border = r.value();
+                auto disk = std::get<Disk<T>>(disk_or_border);
+
+                // Inbound vertex of disk, we have an edge v->u in residual graph.
+                // This edge is not in any path, see article for details.
+                auto u = TransformedVertex{disk.index, true};
+
+                if (explored[u]) {
+                    // Vertex u is already explored, continue with next disk
+                    continue;
+                }
+
+                // Mark explored & remove disk from data structure
+                explored[u] = true;
+                ds[current_level + 1].delete_object(disk);
+
+                path = dfs_explore(ds, disks, explored, prev, next,
+                                   u, current_level + 1,
+                                   sink_level, left_border, has_edge_to_sink, current_path);
+
             }
         }
     }
 
     // Remove vertex from path
     current_path.pop_back();
-
-    // Mark vertex as explored (if this is not source)
-    explored[v] = true;
 
     return path;
 }

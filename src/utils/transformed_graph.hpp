@@ -6,6 +6,7 @@
 // Vertex in transformed graph.
 // (in original graph G, vertices are disks + s and t)
 struct TransformedVertex {
+public:
     // Index of disk in original graph.
     // -1 for s and t
     int disk_index;
@@ -18,7 +19,12 @@ struct TransformedVertex {
     bool operator==(const TransformedVertex &other) const {
         return disk_index == other.disk_index && inbound == other.inbound;
     }
+
+    friend std::ostream &operator<<(std::ostream &o, TransformedVertex const &v) {
+        return o << "(" << v.disk_index << ", " << std::boolalpha << v.inbound << ")";
+    };
 };
+
 
 // Source will be transformed vertex with disk_index = -1 and inbound = false.
 // (has a lot of outgoing edges)
@@ -59,7 +65,12 @@ public:
     bool operator==(const Edge &other) const {
         return from == other.from && to == other.to;
     }
+
+    friend std::ostream &operator<<(std::ostream &o, Edge const &e) {
+        return o << e.from << " -> " << e.to;
+    }
 };
+
 
 // Directed path from s to d in the graph G'.
 // The path is represented as a sequence of edges from G'
