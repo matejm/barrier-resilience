@@ -289,3 +289,19 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
     family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 }
+
+TEST(TestBlockingFamily, TestNoDisks) {
+    std::vector<Disk<int>> disks = {};
+    add_index(disks);
+    std::vector<Edge> no_blocked_edges = {};
+
+    // Expect no path to be found.
+    auto family = find_blocking_family<int, Trivial>(no_blocked_edges, disks, 0, 1);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
+
+    // Still do not expect path from source to sink to be found.
+    // Even we can get from source to sink in a single step, we don't count that as a valid solution.
+    // (you still cannot walk from bottom to top, even if all disks are removed).
+    family = find_blocking_family<int, Trivial>(no_blocked_edges, disks, 0, 0);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
+}

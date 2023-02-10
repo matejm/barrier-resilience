@@ -162,5 +162,13 @@ TransformedVertex disk_to_transformed_vertex(const Disk<T> &disk, bool inbound) 
     return {disk.get_index(), inbound};
 }
 
+// Add indices to disks.
+template<class T>
+void add_index(std::vector<Disk<T>> &disks) {
+    for (int i = 0; i < disks.size(); ++i) {
+        disks[i].index = i;
+    }
+}
+
 
 #endif // BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP

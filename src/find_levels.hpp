@@ -94,7 +94,7 @@ FindLevelsResult find_levels(
     // If we found the sink, we are done.
     if (found_sink) {
         levels[sink] = 1;
-        return {levels, true, -1, prev, next};
+        return {levels, true, 1, prev, next};
     }
 
     // Convert neighboring geometry objects to inbound vertices (there are only inbound vertices on layer 1)

@@ -56,8 +56,11 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
     } else {
         // Even level (v is outbound vertex)
 
+        bool is_source = v == source;
+
         // First check if we are at last vertex before sink
-        if (current_level == sink_level - 1) {
+        // Shortest possible path source -> sink is not considered a path.
+        if (!is_source && current_level == sink_level - 1) {
             // Check if we can get directly to sink
             // - disk of v should be intersected by right border
             // - edge (v, sink) should not be blocked - next[v] should not be sink.
@@ -90,7 +93,6 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
 
             // Explore all other connections from v (that are not on paths)
             // Query data structure for intersecting disks
-            bool is_source = v == source;
 
             // If nothing found, then explore all other connections from v (if we found path, we won't enter this loop)
             while (!path.has_value()) {
@@ -136,7 +138,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
     return path;
 }
 
-Path list_of_vertices_to_path(const std::vector<TransformedVertex> &vertices) {
+static Path list_of_vertices_to_path(const std::vector<TransformedVertex> &vertices) {
     Path path;
     for (int i = 1; i < vertices.size(); i++) {
         path.push_back(Edge(vertices[i - 1], vertices[i]));
@@ -212,7 +214,7 @@ std::vector<Path> find_blocking_family(
                 0,  // Level of source is 0
                 r.distance,  // Level of sink is r.distance
                 left_border,
-                [&](const Disk<T> &disk) { return intersects(disk, right_border); },
+                [&](const Disk<T> &disk) { return intersects<T>(disk, right_border); },
                 empty_path  // Start with empty path
         );
         empty_path.clear(); // Clear path for next iteration

@@ -573,5 +573,19 @@ TEST(TestFindLevels, AdditionalTests) {
 
     r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border + 1);
     ASSERT_FALSE(r.reachable);
+}
 
+TEST(TestFindLevels, NoDisks) {
+    const auto blocked_edges = std::vector<Edge>{};
+    auto disks = std::vector<Disk<int>>{};
+    add_index(disks);
+
+    // No path
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, 0, 1);
+    ASSERT_FALSE(r.reachable);
+
+    // Path
+    r = find_levels<int, Trivial>(blocked_edges, disks, 0, 0);
+    ASSERT_TRUE(r.reachable);
+    ASSERT_EQ(r.distance, 1);
 }
