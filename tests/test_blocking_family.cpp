@@ -238,33 +238,31 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
             {{10, false}, sink}
     };
 
-    // Expect first path to be found (could be second path as well).
-    auto family = find_blocking_family<int, Trivial>(no_blocked_edges, disks, -1, 9);
-    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{first_path}));
-
     // If first path is blocking, no path should be found.
-    family = find_blocking_family<int, Trivial>(first_path, disks, -1, 9);
+    auto family = find_blocking_family<int, Trivial>(first_path, disks, -1, 9);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
     // If second path is blocking, no path should be found.
     family = find_blocking_family<int, Trivial>(second_path, disks, -1, 9);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
-    // Block just a single edge from first path.
+    // Block just two single edges.
     // WARNING: Blocking a single edge is not a good idea, can produce unexpected results as algorithm doesn't check for
     // blocking path in every single step (we check only for previous edge and not for next edge, this is OK if on a path
     // but not ok if there is only a single edge).
     std::vector<Edge> blocking_paths = {
-            {source, {0, true}}
+            {source, {0, true}},
+            {{10, false}, sink}
     };
 
     // Expect second path to be found.
     family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{second_path}));
 
-    // Block just a single edge from second path.
+    // Block edges from third path.
     blocking_paths = {{
-                              {source, {2, true}}
+                              {source, {2, true}},
+                              {{9, false}, {10, true}},
                       }};
 
     // Expect first path to be found.
