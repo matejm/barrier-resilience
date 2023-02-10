@@ -4,17 +4,18 @@
 #include <vector>
 
 TEST(TestFindLevels, TestEmptyPaths) {
-    const auto paths = std::vector<Path>{};
+    const auto blocked_edges = std::vector<Edge>{};
 
     // Trivial disk layout
     auto disks = std::vector<Disk<int>>{
             {{0, 0}, 1},
             {{1, 1}, 1},
     };
+    add_index(disks);
     int left_border = -1;
     int right_border = 2;
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 4  for disks
@@ -39,10 +40,11 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{0, 3}, 2},
             {{2, 1}, 2},
     };
+    add_index(disks);
     left_border = -1;
     right_border = 3;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 6 for disks
@@ -73,10 +75,11 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{5, 0}, 2},
             {{5, 5}, 2},
     };
+    add_index(disks);
     left_border = -1;
     right_border = 6;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 12 for disks
@@ -119,10 +122,11 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{3, -4}, 1},
             {{3, -6}, 1},
     };
+    add_index(disks);
     left_border = 0;
     right_border = 6;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 16 for disks
@@ -166,10 +170,11 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{0, 5},  2},
             {{0, 15}, 3},
     };
+    add_index(disks);
     left_border = -3;
     right_border = 3;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 2 for only reachable disk
@@ -188,7 +193,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
 
 TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
     // Check if longer path is dropped when we reach sink
-    const auto paths = std::vector<Path>{};
+    const auto blocked_edges = std::vector<Edge>{};
 
     auto disks = std::vector<Disk<int>>{
             {{3, 15}, 3},
@@ -196,10 +201,11 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
             {{3, 0},  1},
             {{5, 0},  1},
     };
+    add_index(disks);
     int left_border = 0;
     int right_border = 6;
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and only 4 for disks
@@ -230,10 +236,11 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
             {{3, -6}, 1},
             {{3, -8}, 1},
     };
+    add_index(disks);
     left_border = 0;
     right_border = 6;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 12 for disks
@@ -269,17 +276,18 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
 
 TEST(TestFindLevels, TestEmptyPathsUnreachable) {
     // Check if unreachable is detected correctly
-    const auto paths = std::vector<Path>{};
+    const auto blocked_edges = std::vector<Edge>{};
 
     auto disks = std::vector<Disk<int>>{
             {{1, 0}, 1},
             {{3, 0}, 1},
             {{6, 0}, 1},
     };
+    add_index(disks);
     int left_border = 0;
     int right_border = 7;
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect levels for vertex s and only 4 for disks
@@ -310,10 +318,11 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
             {{3, 10}, 1},
             {{6, 10}, 1},
     };
+    add_index(disks);
     left_border = 0;
     right_border = 7;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect levels for vertex s and 10 for disks
@@ -348,20 +357,19 @@ TEST(TestFindLevels, TestUnreachable) {
             {{1, 0}, 1},
             {{3, 0}, 1},
     };
+    add_index(disks);
     int left_border = 0;
     int right_border = 5;
 
-    const auto paths = std::vector<Path>{
-            {
-                    Edge(source, {0, true}),
-                    Edge({0, true}, {0, false}),
-                    Edge({0, false}, {1, true}),
-                    Edge({1, true}, {1, false}),
-                    Edge({1, false}, sink),
-            }
+    const auto blocked_edges = std::vector<Edge>{
+            Edge(source, {0, true}),
+            Edge({0, true}, {0, false}),
+            Edge({0, false}, {1, true}),
+            Edge({1, true}, {1, false}),
+            Edge({1, false}, sink),
     };
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect only level for s
@@ -375,10 +383,11 @@ TEST(TestFindLevels, TestUnreachable) {
             {{5, 4}, 3},
             {{2, 8}, 3},
     };
+    add_index(disks);
     left_border = 0;
     right_border = 7;
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_FALSE(r.reachable);
 
     // Expect levels for vertex s and 5 for one reachable disks
@@ -408,20 +417,19 @@ TEST(TestFindLevels, TestReachable) {
             {{1, 5}, 1},
             {{3, 5}, 1},
     };
+    add_index(disks);
     int left_border = 0;
     int right_border = 4;
 
-    auto paths = std::vector<Path>{
-            {
-                    Edge(source, {0, true}),
-                    Edge({0, true}, {0, false}),
-                    Edge({0, false}, {1, true}),
-                    Edge({1, true}, {1, false}),
-                    Edge({1, false}, sink),
-            }
+    auto blocked_edges = std::vector<Edge>{
+            Edge(source, {0, true}),
+            Edge({0, true}, {0, false}),
+            Edge({0, false}, {1, true}),
+            Edge({1, true}, {1, false}),
+            Edge({1, false}, sink),
     };
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 4 for reachable disks
@@ -450,22 +458,21 @@ TEST(TestFindLevels, TestReachable) {
             {{2, 2}, 1},
             {{2, 4}, 1},
     };
+    add_index(disks);
     left_border = -1;
     right_border = 3;
 
-    paths = std::vector<Path>{
-            {
-                    Edge(source, {1, true}),
-                    Edge({1, true}, {1, false}),
-                    Edge({1, false}, {2, true}),
-                    Edge({2, true}, {2, false}),
-                    Edge({2, false}, {4, true}),
-                    Edge({4, true}, {4, false}),
-                    Edge({4, false}, sink),
-            }
+    blocked_edges = std::vector<Edge>{
+            Edge(source, {1, true}),
+            Edge({1, true}, {1, false}),
+            Edge({1, false}, {2, true}),
+            Edge({2, true}, {2, false}),
+            Edge({2, false}, {4, true}),
+            Edge({4, true}, {4, false}),
+            Edge({4, false}, sink),
     };
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and a lot for reachable disks
@@ -509,18 +516,17 @@ TEST(TestFindLevels, TestLongerPathDropped) {
             // 1 disk path
             {{3, 20}, 3},
     };
+    add_index(disks);
     int left_border = 0;
     int right_border = 4;
 
-    auto paths = std::vector<Path>{
-            {
-                    Edge(source, {2, true}),
-                    Edge({2, true}, {2, false}),
-                    Edge({2, false}, sink),
-            }
+    auto blocked_edges = std::vector<Edge>{
+            Edge(source, {2, true}),
+            Edge({2, true}, {2, false}),
+            Edge({2, false}, sink),
     };
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
     // Expect levels for vertices s, t and 4 for reachable disks (more than 4, but only 4 are reachable before reaching sink)
@@ -541,7 +547,7 @@ TEST(TestFindLevels, TestLongerPathDropped) {
 
 // Test which helped me find a bug in the algorithm.
 TEST(TestFindLevels, AdditionalTests) {
-    const auto paths = std::vector<Path>{};
+    const auto blocked_edges = std::vector<Edge>{};
 
     // Trivial disk layout
     auto disks = std::vector<Disk<int>>{
@@ -555,16 +561,17 @@ TEST(TestFindLevels, AdditionalTests) {
             {{2, 12}, 1},
             {{2, 8},  1},
     };
+    add_index(disks);
     int left_border = -1;
     int right_border = 5;
 
-    auto r = find_levels<int, Trivial>(paths, disks, left_border, right_border);
+    auto r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border);
     ASSERT_TRUE(r.reachable);
 
-    r = find_levels<int, Trivial>(paths, disks, left_border - 1, right_border);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border - 1, right_border);
     ASSERT_FALSE(r.reachable);
 
-    r = find_levels<int, Trivial>(paths, disks, left_border, right_border + 1);
+    r = find_levels<int, Trivial>(blocked_edges, disks, left_border, right_border + 1);
     ASSERT_FALSE(r.reachable);
 
 }

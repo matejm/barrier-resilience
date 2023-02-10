@@ -147,16 +147,16 @@ Path list_of_vertices_to_path(const std::vector<TransformedVertex> &vertices) {
 // DS is a data structure implementation
 template<class T, template<typename> class DS>
 std::vector<Path> find_blocking_family(
-        // Set of edge disjoint paths in G'
-        const std::vector<Path> &paths,
+        // Set of edge disjoint paths in G' (multiple paths specified as list of edges)
+        const std::vector<Edge> &blocked_edges,
         // Disks representing the vertices of G
-        std::vector<Disk<T>> &disks,
+        const std::vector<Disk<T>> &disks,
         // Left and right boundary of the available space
         const int left_border_x,
         const int right_border_x) {
 
     // First, compute level for each vertex
-    auto r = find_levels<T, DS>(paths, disks, left_border_x, right_border_x);
+    auto r = find_levels<T, DS>(blocked_edges, disks, left_border_x, right_border_x);
 
     if (!r.reachable) {
         // If sink is not reachable, then there is no blocking family (blocking family exits -> it is an empty set)
@@ -199,7 +199,6 @@ std::vector<Path> find_blocking_family(
 
     std::vector<TransformedVertex> empty_path;
 
-    int j = 1;
     while (true) {
         // We perform DFS traversal from the source.
         // When we get to sink, we have found a path. We add it to the new path family.

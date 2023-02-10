@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include "utils/geometry_objects.hpp"
-#include "with_graph_construction/barrier_resillience.hpp"
+#include "with_graph_construction/graph_barrier_resilience.hpp"
 #include "utils/visualize.hpp"
 
 int main() {
@@ -15,9 +15,9 @@ int main() {
     int left = 0,
             right = 5;
 
-    std::cout << barrier_resilience_number_of_disks(disks, left, right) << std::endl;
+    std::cout << graph_barrier_resilience_number_of_disks(disks, left, right) << std::endl;
 
-    auto to_remove = barrier_resilience_disks(disks, left, right);
+    auto to_remove = graph_barrier_resilience_disks(disks, left, right);
 
     std::cout << "To remove: ";
     for (int i = 0; i < to_remove.size(); ++i) {

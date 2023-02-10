@@ -5,20 +5,20 @@
 #include "utils/geometry_objects.hpp"
 #include "blocking_family.hpp"
 
-
 TEST(TestBlockingFamily, TestEmptyPaths) {
-    const auto paths = std::vector<Path>{};
+    const auto blocked_edges = std::vector<Edge>{};
 
     // Simple path from source to sink
     auto disks = std::vector<Disk<int>>{
             {{0, 0}, 1},
             {{1, 1}, 1},
     };
+    add_index(disks);
     int left_border = -1;
     int right_border = 2;
 
     // Expect single path of length 5
-    std::vector<Path> family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    std::vector<Path> family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     std::vector<Path> expected = {
             {{source, {0, true}}, {{0, true}, {0, false}}, {{0, false}, {1, true}}, {{1, true}, {1, false}},
              {{1, false}, sink}}
@@ -30,11 +30,12 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
             {{0, 0},  2},
             {{0, 10}, 2},
     };
+    add_index(disks);
     left_border = -1;
     right_border = 2;
 
     // Expect two paths of length 3
-    family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     // In case of different data structures, order of paths may be different.
     expected = {
             {{source, {1, true}}, {{1, true}, {1, false}}, {{1, false}, sink}},
@@ -57,11 +58,12 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
             {{2, 14}, 1},
             {{2, 16}, 1},
     };
+    add_index(disks);
     left_border = -1;
     right_border = 5;
 
     // Expect single path of length 7
-    family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     expected = {
             {{source, {4, true}}, {{4, true}, {4, false}}, {{4, false}, {5, true}}, {{5, true}, {5, false}},
              {{5, false}, {8, true}}, {{8, true}, {8, false}}, {{8, false}, sink}}
@@ -71,7 +73,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
 }
 
 TEST(TestBlockingFamily, TestLongerPathsDropped) {
-    auto paths = std::vector<Path>{};
+    auto blocked_edges = std::vector<Edge>{};
 
     // Shorter and longer path.
     auto disks = std::vector<Disk<int>>{
@@ -82,12 +84,13 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
             {{4, 4},  1},
             {{2, 30}, 3},
     };
+    add_index(disks);
     int left_border = -1;
     int right_border = 5;
 
     // Expect only shorter path to be found.
     // (we are searching in layered residual graph, so longer path is thrown away)
-    std::vector<Path> family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    std::vector<Path> family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     // Order of paths may be different if algorithm changes.
     std::vector<Path> expected = {
             {{source, {5, true}}, {{5, true}, {5, false}}, {{5, false}, sink}},
@@ -95,10 +98,10 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
     EXPECT_EQ(family, expected);
 
     // Set shorter path as blocking path.
-    paths = expected;
+    blocked_edges = expected[0];
 
     // Expect longer path to be found.
-    family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     expected = {
             {{source, {0, true}}, {{0, true}, {0, false}}, {{0, false}, {1, true}}, {{1, true}, {1, false}},
              {{1, false}, {2, true}}, {{2, true}, {2, false}}, {{2, false}, {3, true}}, {{3, true}, {3, false}},
@@ -108,7 +111,7 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
 }
 
 TEST(TestBlockingFamily, TestPathsUnreachable) {
-    auto paths = std::vector<Path>{};
+    auto blocked_edges = std::vector<Edge>{};
 
     // Shorter and longer path.
     auto disks = std::vector<Disk<int>>{
@@ -118,12 +121,13 @@ TEST(TestBlockingFamily, TestPathsUnreachable) {
             {{2, 4}, 1},
             {{4, 4}, 1},
     };
+    add_index(disks);
     int left_border = -1;
     // Unreachable sink.
     int right_border = 6;
 
     // Expect no path to be found.
-    std::vector<Path> family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    std::vector<Path> family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     std::vector<Path> expected = {};
     EXPECT_EQ(family, expected);
 
@@ -131,20 +135,20 @@ TEST(TestBlockingFamily, TestPathsUnreachable) {
     right_border = 5;
 
     // Path blocking all disks.
-    paths = {{{source, {0, true}},
-              {{0, true}, {0, false}},
-              {{0, false}, {1, true}},
-              {{1, true}, {1, false}},
-              {{1, false}, {2, true}},
-              {{2, true}, {2, false}},
-              {{2, false}, {3, true}},
-              {{3, true}, {3, false}},
-              {{3, false}, {4, true}},
-              {{4, true}, {4, false}},
-              {{4, false}, sink}}};
+    blocked_edges = {{{source, {0, true}},
+                      {{0, true}, {0, false}},
+                      {{0, false}, {1, true}},
+                      {{1, true}, {1, false}},
+                      {{1, false}, {2, true}},
+                      {{2, true}, {2, false}},
+                      {{2, false}, {3, true}},
+                      {{3, true}, {3, false}},
+                      {{3, false}, {4, true}},
+                      {{4, true}, {4, false}},
+                      {{4, false}, sink}}};
 
     // Expect no path to be found.
-    family = find_blocking_family<int, Trivial>(paths, disks, left_border, right_border);
+    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
     expected = {};
     EXPECT_EQ(family, expected);
 }
@@ -173,95 +177,90 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
             {{6, 4}, 1},
             {{8, 4}, 1},
     };
+    add_index(disks);
 
-    std::vector<Path> no_paths = {};
+    std::vector<Edge> no_blocked_edges = {};
 
-    std::vector<Path> first_path = {
-            {
-                    {source, {0, true}},
-                    {{0, true}, {0, false}},
-                    {{0, false}, {1, true}},
-                    {{1, true}, {1, false}},
-                    {{1, false}, {4, true}},
-                    {{4, true}, {4, false}},
-                    {{4, false}, {5, true}},
-                    {{5, true}, {5, false}},
-                    {{5, false}, {6, true}},
-                    {{6, true}, {6, false}},
-                    {{6, false}, {7, true}},
-                    {{7, true}, {7, false}},
-                    {{7, false}, {8, true}},
-                    {{8, true}, {8, false}},
-                    {{8, false}, sink}
-            }
+    std::vector<Edge> first_path = {
+            {source,     {0, true}},
+            {{0, true},  {0, false}},
+            {{0, false}, {1, true}},
+            {{1, true},  {1, false}},
+            {{1, false}, {4, true}},
+            {{4, true},  {4, false}},
+            {{4, false}, {5, true}},
+            {{5, true},  {5, false}},
+            {{5, false}, {6, true}},
+            {{6, true},  {6, false}},
+            {{6, false}, {7, true}},
+            {{7, true},  {7, false}},
+            {{7, false}, {8, true}},
+            {{8, true},  {8, false}},
+            {{8, false}, sink}
     };
 
-    std::vector<Path> second_path = {
-            {
-                    {source, {2, true}},
-                    {{2, true}, {2, false}},
-                    {{2, false}, {3, true}},
-                    {{3, true}, {3, false}},
-                    {{3, false}, {4, true}},
-                    {{4, true}, {4, false}},
-                    {{4, false}, {5, true}},
-                    {{5, true}, {5, false}},
-                    {{5, false}, {6, true}},
-                    {{6, true}, {6, false}},
-                    // Here, path has multiple options where to go, default will be the first one.
-                    {{6, false}, {7, true}},
-                    {{7, true}, {7, false}},
-                    {{7, false}, {8, true}},
-                    {{8, true}, {8, false}},
-                    {{8, false}, sink}
-            }
+    std::vector<Edge> second_path = {
+            {source,     {2, true}},
+            {{2, true},  {2, false}},
+            {{2, false}, {3, true}},
+            {{3, true},  {3, false}},
+            {{3, false}, {4, true}},
+            {{4, true},  {4, false}},
+            {{4, false}, {5, true}},
+            {{5, true},  {5, false}},
+            {{5, false}, {6, true}},
+            {{6, true},  {6, false}},
+            // Here, path has multiple options where to go, default will be the first one.
+            {{6, false}, {7, true}},
+            {{7, true},  {7, false}},
+            {{7, false}, {8, true}},
+            {{8, true},  {8, false}},
+            {{8, false}, sink}
     };
 
     // Starts as a second path, goes in different direction on diverging point.
-    std::vector<Path> third_path = {
-            {
-                    {source, {2, true}},
-                    {{2, true}, {2, false}},
-                    {{2, false}, {3, true}},
-                    {{3, true}, {3, false}},
-                    {{3, false}, {4, true}},
-                    {{4, true}, {4, false}},
-                    {{4, false}, {5, true}},
-                    {{5, true}, {5, false}},
-                    {{5, false}, {6, true}},
-                    {{6, true}, {6, false}},
-                    // Goes in different direction on diverging point.
-                    {{6, false}, {9, true}},
-                    {{9, true}, {9, false}},
-                    {{9, false}, {10, true}},
-                    {{10, true}, {10, false}},
-                    {{10, false}, sink}
-            }
+    std::vector<Edge> third_path = {
+            {source,      {2,  true}},
+            {{2,  true},  {2,  false}},
+            {{2,  false}, {3,  true}},
+            {{3,  true},  {3,  false}},
+            {{3,  false}, {4,  true}},
+            {{4,  true},  {4,  false}},
+            {{4,  false}, {5,  true}},
+            {{5,  true},  {5,  false}},
+            {{5,  false}, {6,  true}},
+            {{6,  true},  {6,  false}},
+            // Goes in different direction on diverging point.
+            {{6,  false}, {9,  true}},
+            {{9,  true},  {9,  false}},
+            {{9,  false}, {10, true}},
+            {{10, true},  {10, false}},
+            {{10, false}, sink}
     };
 
     // Expect first path to be found (could be second path as well).
-    auto family = find_blocking_family<int, Trivial>(no_paths, disks, -1, 9);
-    EXPECT_EQ(family, first_path);
+    auto family = find_blocking_family<int, Trivial>(no_blocked_edges, disks, -1, 9);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{first_path}));
 
     // If first path is blocking, no path should be found.
     family = find_blocking_family<int, Trivial>(first_path, disks, -1, 9);
-    EXPECT_EQ(family, no_paths);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
     // If second path is blocking, no path should be found.
     family = find_blocking_family<int, Trivial>(second_path, disks, -1, 9);
-    EXPECT_EQ(family, no_paths);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
     // Block just a single edge from first path.
     // WARNING: Blocking a single edge is not a good idea, can produce unexpected results as algorithm doesn't check for
     // blocking path in every single step (we check only for previous edge and not for next edge, this is OK if on a path
     // but not ok if there is only a single edge).
-    std::vector<Path> blocking_paths = {{
-                                                {source, {0, true}}
-                                        }};
+    std::vector<Edge> blocking_paths = {
+            {source, {0, true}}
+    };
 
     // Expect second path to be found.
     family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
-    EXPECT_EQ(family, second_path);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{second_path}));
 
     // Block just a single edge from second path.
     blocking_paths = {{
@@ -270,23 +269,23 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
 
     // Expect first path to be found.
     family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
-    EXPECT_EQ(family, first_path);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{first_path}));
 
     // Block another edge from first path.
-    blocking_paths = {{
-                              {source, {0, true}},
-                              {{7, false}, {8, true}}
-                      }};
+    blocking_paths = {
+            {source,     {0, true}},
+            {{7, false}, {8, true}}
+    };
     // Expect third path to be found.
     family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
-    EXPECT_EQ(family, third_path);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{third_path}));
 
     // Block edge from merging point from one side
-    blocking_paths = {{
-                              {{1, false}, {4, true}},
-                              {{4, true}, {4, false}}
-                      }};
+    blocking_paths = {
+            {{1, false}, {4, true}},
+            {{4, true},  {4, false}}
+    };
     // Expect no path to be found.
     family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
-    EXPECT_EQ(family, no_paths);
+    EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 }

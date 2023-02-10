@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
-#define BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
+#ifndef BARRIER_RESILIENCE_GRAPH_BARRIER_RESILIENCE_HPP
+#define BARRIER_RESILIENCE_GRAPH_BARRIER_RESILIENCE_HPP
 
 #include <vector>
 #include <iostream>
@@ -15,10 +15,10 @@ enum class Algorithm {
 
 // Returns just minimal number of disks that need to be removed.
 template<class T>
-int barrier_resilience_number_of_disks(const std::vector<Disk<T>> &disks,
-                                       const T left_border_x,
-                                       const T right_border_x,
-                                       Algorithm algorithm = Algorithm::FordFulkerson) {
+int graph_barrier_resilience_number_of_disks(const std::vector<Disk<T>> &disks,
+                                             const T left_border_x,
+                                             const T right_border_x,
+                                             Algorithm algorithm = Algorithm::FordFulkerson) {
     // Create graph of objects.
     Graph graph = generate_expanded_graph(disks, left_border_x, right_border_x);
 
@@ -37,10 +37,10 @@ int barrier_resilience_number_of_disks(const std::vector<Disk<T>> &disks,
 
 // Returns indices of specific disks that need to be removed.
 template<class T>
-std::vector<int> barrier_resilience_disks(const std::vector<Disk<T>> &disks,
-                                          const T left_border_x,
-                                          const T right_border_x,
-                                          Algorithm algorithm = Algorithm::FordFulkerson) {
+std::vector<int> graph_barrier_resilience_disks(const std::vector<Disk<T>> &disks,
+                                                const T left_border_x,
+                                                const T right_border_x,
+                                                Algorithm algorithm = Algorithm::FordFulkerson) {
     // Create graph of objects.
     auto graph = generate_expanded_graph(disks, left_border_x, right_border_x);
 
@@ -73,4 +73,4 @@ std::vector<int> barrier_resilience_disks(const std::vector<Disk<T>> &disks,
 }
 
 
-#endif // BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
+#endif // BARRIER_RESILIENCE_GRAPH_BARRIER_RESILIENCE_HPP

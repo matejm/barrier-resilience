@@ -29,18 +29,14 @@ struct FindLevelsResult {
 template<class T, template<typename = T> class DS>
 FindLevelsResult find_levels(
         // Set of edge disjoint paths in G'.
-        const std::vector<Path> &paths,
+        // (actually just a array of edges in G' which are on some path)
+        const std::vector<Edge> &blocked_edges,
         // Disks representing the vertices of G
-        std::vector<Disk<T>> &disks,
+        const std::vector<Disk<T>> &disks,
         // Left and right boundary of the available space
         const int left_border_x,
         const int right_border_x
 ) {
-    // Set index to each disk (so we can track them in the data structure)
-    for (int i = 0; i < disks.size(); i++) {
-        disks[i].set_index(i);
-    }
-
     auto levels = std::unordered_map<TransformedVertex, int, TransformedVertexHash>();
     std::vector<bool> used_disks(disks.size(), false);
 
@@ -51,13 +47,11 @@ FindLevelsResult find_levels(
     std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> prev;
     std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> next;
 
-    for (const auto &path: paths) {
-        for (auto e : path) {
-            // Add previous vertex
-            prev[e.to] = e.from;
-            // Add next vertex
-            next[e.from] = e.to;
-        }
+    for (const auto e: blocked_edges) {
+        // Add previous vertex
+        prev[e.to] = e.from;
+        // Add next vertex
+        next[e.from] = e.to;
     }
 
     // First layer - layer 0 - level of source is 0

@@ -2,6 +2,7 @@
 #define BARRIER_RESILIENCE_TRANSFORMED_GRAPH_HPP
 
 #include <vector>
+#include <iostream>
 
 // Vertex in transformed graph.
 // (in original graph G, vertices are disks + s and t)
@@ -81,6 +82,14 @@ class TransformedVertexHash {
 public:
     size_t operator()(const TransformedVertex &vertex) const {
         return std::hash<int>()(vertex.disk_index) ^ std::hash<bool>()(vertex.inbound);
+    }
+};
+
+// Custom hash function for edges.
+class EdgeHash {
+public:
+    size_t operator()(const Edge &edge) const {
+        return TransformedVertexHash()(edge.from) ^ ~TransformedVertexHash()(edge.to);
     }
 };
 
