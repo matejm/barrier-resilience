@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_VISUALIZE_HPP
-#define BARRIER_RESILIENCE_VISUALIZE_HPP
+#ifndef UTILS_VISUALIZE_HPP
+#define UTILS_VISUALIZE_HPP
 
 #include <string>
 #include <sstream>
@@ -97,4 +97,4 @@ std::string problem_to_svg(const std::vector<Disk<T>> &disks, const int left_bor
     return objects_to_svg(objects, to_remove);
 }
 
-#endif // BARRIER_RESILIENCE_VISUALIZE_HPP
+#endif //UTILS_VISUALIZE_HPP

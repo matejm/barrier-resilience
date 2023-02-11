@@ -17,9 +17,9 @@ add_executable(
         with_graph_construction/test_barrier_resilience.cpp
         with_graph_construction/test_even_tarjan.cpp
         data_structure/test_trivial.cpp
-        test_find_levels.cpp
-        test_blocking_family.cpp
-        test_barrier_resilience.cpp)
+        barrier_resilience/test_find_levels.cpp
+        barrier_resilience/test_blocking_family.cpp
+        barrier_resilience/test_barrier_resilience.cpp)
 
 target_link_libraries(
         tests

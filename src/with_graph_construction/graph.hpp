@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_GRAPH_HPP
-#define BARRIER_RESILIENCE_GRAPH_HPP
+#ifndef WITH_GRAPH_CONSTRUCTION_GRAPH_HPP
+#define WITH_GRAPH_CONSTRUCTION_GRAPH_HPP
 
 #include <vector>
 #include <iostream>
@@ -96,4 +96,4 @@ Graph objects_to_graph(const std::vector<GeometryObject<T>> &objects) {
 void print_graph(const Graph &graph);
 
 
-#endif // BARRIER_RESILIENCE_GRAPH_HPP
+#endif //WITH_GRAPH_CONSTRUCTION_GRAPH_HPP

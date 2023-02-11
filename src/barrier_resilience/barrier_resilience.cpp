@@ -1,10 +1,4 @@
-#ifndef BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
-#define BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
-
-#include <vector>
-#include <unordered_map>
-#include "utils/geometry_objects.hpp"
-#include "blocking_family.hpp"
+#include "barrier_resilience.hpp"
 
 std::vector<Edge> direct_sum(const std::vector<Edge> &edges, const std::vector<Path> &paths) {
     std::unordered_map<Edge, int, EdgeHash> edge_count = {};
@@ -31,13 +25,13 @@ std::vector<Edge> direct_sum(const std::vector<Edge> &edges, const std::vector<P
     return result;
 }
 
-
-template<class T, template<typename> class DS>
+template<class T>
 int barrier_resilience_number_of_disks(std::vector<Disk<T>> &disks,
-                                       const T left_border_x,
-                                       const T right_border_x) {
+                                       const T &left_border_x,
+                                       const T &right_border_x,
+                                       const Config<T> &config) {
     // Set index to each disk (so we can track them in the data structure)
-    add_index(disks);
+    add_index<T>(disks);
 
     // We won't have a family of paths, but just a collection of all edges.
     // (that way, we can compute direct sum of all edges)
@@ -49,7 +43,7 @@ int barrier_resilience_number_of_disks(std::vector<Disk<T>> &disks,
 
     while (true) {
         // Find blocking family of paths.
-        auto blocking_family = find_blocking_family<T, DS>(edges, disks, left_border_x, right_border_x);
+        auto blocking_family = find_blocking_family<T>(edges, disks, left_border_x, right_border_x, config);
 
         if (blocking_family.empty()) {
             // No more paths to find.
@@ -65,5 +59,13 @@ int barrier_resilience_number_of_disks(std::vector<Disk<T>> &disks,
     return path_count;
 }
 
+// Force compiler to instantiate template for int and double
+template int barrier_resilience_number_of_disks<int>(std::vector<Disk<int>> &disks,
+                                                     const int &left_border_x,
+                                                     const int &right_border_x,
+                                                     const Config<int> &config);
 
-#endif //BARRIER_RESILIENCE_BARRIER_RESILIENCE_HPP
+template int barrier_resilience_number_of_disks<double>(std::vector<Disk<double>> &disks,
+                                                        const double &left_border_x,
+                                                        const double &right_border_x,
+                                                        const Config<double> &config);

@@ -4,6 +4,8 @@
 #include "utils/geometry_objects.hpp"
 #include "with_graph_construction/graph_barrier_resilience.hpp"
 #include "utils/visualize.hpp"
+#include "barrier_resilience/barrier_resilience.hpp"
+#include "barrier_resilience/config.hpp"
 
 int main() {
     auto disks = std::vector<Disk<int>>{
@@ -12,10 +14,12 @@ int main() {
             {{4, 0},  2},
     };
 
-    int left = 0,
-            right = 5;
+    int left = 0, right = 5;
 
     std::cout << graph_barrier_resilience_number_of_disks(disks, left, right) << std::endl;
+    std::cout << barrier_resilience_number_of_disks<int>(disks, left, right,
+                                                         Config<int>::with_trivial_datastructure())
+              << std::endl;
 
     auto to_remove = graph_barrier_resilience_disks(disks, left, right);
 

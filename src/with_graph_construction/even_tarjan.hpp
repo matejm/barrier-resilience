@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_EVEN_TARJAN_HPP
-#define BARRIER_RESILIENCE_EVEN_TARJAN_HPP
+#ifndef WITH_GRAPH_CONSTRUCTION_EVEN_TARJAN_HPP
+#define WITH_GRAPH_CONSTRUCTION_EVEN_TARJAN_HPP
 
 #include <vector>
 #include <map>
@@ -27,4 +27,4 @@ std::vector<std::vector<int>> dfs_on_bfs_tree(const Graph &g, int start, int end
 
 Graph create_bfs_tree(std::vector<int> parent);
 
-#endif //BARRIER_RESILIENCE_EVEN_TARJAN_HPP
+#endif //WITH_GRAPH_CONSTRUCTION_EVEN_TARJAN_HPP

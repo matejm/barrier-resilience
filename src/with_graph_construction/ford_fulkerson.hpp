@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_FORD_FULKERSON_HPP
-#define BARRIER_RESILIENCE_FORD_FULKERSON_HPP
+#ifndef WITH_GRAPH_CONSTRUCTION_FORD_FULKERSON_HPP
+#define WITH_GRAPH_CONSTRUCTION_FORD_FULKERSON_HPP
 
 #include <vector>
 #include <map>
@@ -38,4 +38,4 @@ int ford_fulkerson_max_flow(const Graph &graph, int start, int end);
 // Returns vector of edges that are part of min cut.
 std::vector<std::pair<int, int>> ford_fulkerson_min_cut(const Graph &graph, int start, int end);
 
-#endif //BARRIER_RESILIENCE_FORD_FULKERSON_HPP
+#endif //WITH_GRAPH_CONSTRUCTION_FORD_FULKERSON_HPP

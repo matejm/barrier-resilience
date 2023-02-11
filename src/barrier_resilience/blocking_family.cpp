@@ -1,18 +1,10 @@
-#ifndef BARRIER_RESILIENCE_BLOCKING_FAMILY_HPP
-#define BARRIER_RESILIENCE_BLOCKING_FAMILY_HPP
+#include "blocking_family.hpp"
 
-#include <vector>
-#include <ranges>
-#include <optional>
-#include "utils/geometry_objects.hpp"
-#include "utils/transformed_graph.hpp"
-#include "data_structure/data_structure.hpp"
-#include "find_levels.hpp"
 
-template<class T, template<typename = T> class DS>
+template<class T>
 std::optional<std::vector<TransformedVertex>> dfs_explore(
         // Used to query intersecting disks.
-        std::vector<DS<T>> &ds,
+        std::vector<DataStructure<T> *> &ds,
         const std::vector<Disk<T>> &disks,
         // Visited vertices. Source and sink are never marked as visited; we can visit them multiple times.
         std::unordered_map<TransformedVertex, bool, TransformedVertexHash> &explored,
@@ -82,7 +74,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
                 auto v_in = TransformedVertex{v.disk_index, true};
                 if (!explored[v_in]) {
                     // Remove disk from data structure[current_level + 1]
-                    ds[current_level + 1].delete_object(disks[v.disk_index]);
+                    ds[current_level + 1]->delete_object(disks[v.disk_index]);
 
                     explored[v_in] = true;
                     path = dfs_explore(ds, disks, explored, prev, next,
@@ -99,8 +91,8 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
                 // Check if disk of v is intersected by any disk in data structure[current_level + 1]
                 // If v is source, then compute intersection with left border
                 auto r = is_source
-                         ? ds[current_level + 1].intersecting(left_border)
-                         : ds[current_level + 1].intersecting(disks[v.disk_index]);
+                         ? ds[current_level + 1]->intersecting(left_border)
+                         : ds[current_level + 1]->intersecting(disks[v.disk_index]);
 
                 if (!r.has_value()) {
                     // No intersecting disk found, done with this vertex
@@ -122,7 +114,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
 
                 // Mark explored & remove disk from data structure
                 explored[u] = true;
-                ds[current_level + 1].delete_object(disk);
+                ds[current_level + 1]->delete_object(disk);
 
                 path = dfs_explore(ds, disks, explored, prev, next,
                                    u, current_level + 1,
@@ -138,27 +130,20 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
     return path;
 }
 
-static Path list_of_vertices_to_path(const std::vector<TransformedVertex> &vertices) {
-    Path path;
-    for (int i = 1; i < vertices.size(); i++) {
-        path.push_back(Edge(vertices[i - 1], vertices[i]));
-    }
-    return path;
-}
 
-// DS is a data structure implementation
-template<class T, template<typename> class DS>
+template<class T>
 std::vector<Path> find_blocking_family(
         // Set of edge disjoint paths in G' (multiple paths specified as list of edges)
         const std::vector<Edge> &blocked_edges,
         // Disks representing the vertices of G
         const std::vector<Disk<T>> &disks,
         // Left and right boundary of the available space
-        const int left_border_x,
-        const int right_border_x) {
+        const T left_border_x,
+        const T right_border_x,
+        const Config<T> &config) {
 
     // First, compute level for each vertex
-    auto r = find_levels<T, DS>(blocked_edges, disks, left_border_x, right_border_x);
+    auto r = find_levels<T>(blocked_edges, disks, left_border_x, right_border_x, config);
 
     if (!r.reachable) {
         // If sink is not reachable, then there is no blocking family (blocking family exits -> it is an empty set)
@@ -173,7 +158,10 @@ std::vector<Path> find_blocking_family(
 
     // Construct data structure for each odd level
     // data_structures[i] (for odd i) will contain vertices v_in
-    auto data_structures = std::vector<DS<T>>(r.distance + 1, DS<T>());
+    auto data_structures = std::vector<DataStructure<T> *>(r.distance + 1);
+    for (int i = 0; i < data_structures.size(); i++) {
+        data_structures[i] = config.data_structure_constructor();
+    }
 
     // A little change from the article:
     // We do not need to build for last level, because it contains only sink (therefore < instead of <=).
@@ -185,7 +173,7 @@ std::vector<Path> find_blocking_family(
                 inbound_vertices.push_back(disks[v.disk_index]);
             }
         }
-        data_structures[i].rebuild(inbound_vertices);
+        data_structures[i]->rebuild(inbound_vertices);
     }
 
     // Find blocking path in layered residual graph.
@@ -204,7 +192,7 @@ std::vector<Path> find_blocking_family(
     while (true) {
         // We perform DFS traversal from the source.
         // When we get to sink, we have found a path. We add it to the new path family.
-        auto new_path = dfs_explore<T, DS>(
+        auto new_path = dfs_explore<T>(
                 data_structures,
                 disks,
                 explored,
@@ -231,4 +219,27 @@ std::vector<Path> find_blocking_family(
     return new_paths;
 }
 
-#endif //BARRIER_RESILIENCE_BLOCKING_FAMILY_HPP
+static Path list_of_vertices_to_path(const std::vector<TransformedVertex> &vertices) {
+    Path path;
+    for (int i = 1; i < vertices.size(); i++) {
+        path.push_back(Edge(vertices[i - 1], vertices[i]));
+    }
+    return path;
+}
+
+
+// Force compiler to generate code for these types
+template std::vector<Path> find_blocking_family<int>(
+        const std::vector<Edge> &blocked_edges,
+        const std::vector<Disk<int>> &disks,
+        const int left_border_x,
+        const int right_border_x,
+        const Config<int> &config);
+
+template std::vector<Path> find_blocking_family<double>(
+        const std::vector<Edge> &blocked_edges,
+        const std::vector<Disk<double>> &disks,
+        const double left_border_x,
+        const double right_border_x,
+        const Config<double> &config);
+

@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP
-#define BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP
+#ifndef UTILS_GEOMETRY_OBJECTS_HPP
+#define UTILS_GEOMETRY_OBJECTS_HPP
 
 #include <variant>
 #include "utils.hpp"
@@ -171,4 +171,4 @@ void add_index(std::vector<Disk<T>> &disks) {
 }
 
 
-#endif // BARRIER_RESILIENCE_GEOMETRY_OBJECTS_HPP
+#endif //UTILS_GEOMETRY_OBJECTS_HPP

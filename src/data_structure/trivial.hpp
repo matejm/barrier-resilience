@@ -1,5 +1,5 @@
-#ifndef BARRIER_RESILIENCE_TRIVIAL_HPP
-#define BARRIER_RESILIENCE_TRIVIAL_HPP
+#ifndef DATA_STRUCTURE_TRIVIAL_HPP
+#define DATA_STRUCTURE_TRIVIAL_HPP
 
 #include <vector>
 #include <optional>
@@ -41,4 +41,4 @@ public:
     }
 };
 
-#endif //BARRIER_RESILIENCE_TRIVIAL_HPP
+#endif //DATA_STRUCTURE_TRIVIAL_HPP

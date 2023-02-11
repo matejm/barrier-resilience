@@ -1,32 +1,6 @@
-#ifndef BARRIER_RESILIENCE_FIND_LEVELS_HPP
-#define BARRIER_RESILIENCE_FIND_LEVELS_HPP
+#include "find_levels.hpp"
 
-#include <vector>
-#include <unordered_map>
-#include "utils/geometry_objects.hpp"
-#include "utils/transformed_graph.hpp"
-#include "data_structure/data_structure.hpp"
-
-struct FindLevelsResult {
-    // TODO: unordered map can be swapped for a std::vector<pair<int, int>> (index of a vector is a border index, then two values for inboud and outbound edges)
-    std::unordered_map<TransformedVertex, int, TransformedVertexHash> levels;
-    // True if there is a path from left border to right border.
-    bool reachable;
-    // Total distance to the sink, if reachable.
-    int distance;
-    // Map of previous vertices on the path from source to sink.
-    // Warning: prev[sink] might be incorrect (we can get to sink from multiple vertices).
-    std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> prev;
-    // Map of next vertices on the path from source to sink.
-    // Warning: next[source] might be incorrect (there can be multiple paths from source to sink).
-    std::unordered_map<TransformedVertex, TransformedVertex, TransformedVertexHash> next;
-};
-
-// Find BFS distance from source for each vertex v of a graph G' (lambda(v) in the article).
-// Works by performing BFS from source in the residual graph R(G', paths) without explicit construction of the edge set
-// of R.
-
-template<class T, template<typename = T> class DS>
+template<class T>
 FindLevelsResult find_levels(
         // Set of edge disjoint paths in G'.
         // (actually just a array of edges in G' which are on some path)
@@ -34,8 +8,9 @@ FindLevelsResult find_levels(
         // Disks representing the vertices of G
         const std::vector<Disk<T>> &disks,
         // Left and right boundary of the available space
-        const int left_border_x,
-        const int right_border_x
+        const T &left_border_x,
+        const T &right_border_x,
+        const Config<T> &config
 ) {
     auto levels = std::unordered_map<TransformedVertex, int, TransformedVertexHash>();
     std::vector<bool> used_disks(disks.size(), false);
@@ -61,8 +36,8 @@ FindLevelsResult find_levels(
     std::vector<GeometryObject<T>> objects(disks.begin(), disks.end());
     objects.push_back(right_border);
 
-    DS<T> ds;
-    ds.rebuild(objects);
+    DataStructure<T> * ds = config.data_structure_constructor();
+    ds->rebuild(objects);
 
     // Find layer 1 - query datastructure for disks intersecting with the left border
     std::vector<Disk<T>> u_neighbors;
@@ -70,12 +45,12 @@ FindLevelsResult find_levels(
 
     while (true) {
         // Find disk intersecting with the left border
-        auto n = ds.intersecting(left_border);
+        auto n = ds->intersecting(left_border);
 
         if (n.has_value()) {
             const GeometryObject<T> o = n.value();
             // Remove object from data structure
-            ds.delete_object(o);
+            ds->delete_object(o);
 
             // If the object is a disk, add it to the list of neighbors
             if (is_disk(o)) {
@@ -127,7 +102,7 @@ FindLevelsResult find_levels(
         }
     }
     objects.push_back(right_border);
-    ds.rebuild(objects);
+    ds->rebuild(objects);
 
     // Last layer, L[i - 1]
     std::vector<TransformedVertex> last_layer_vertices = u_neighbors_vertices;
@@ -174,12 +149,12 @@ FindLevelsResult find_levels(
 
                 // Query data structure for objects intersecting with the disk
                 while (true) {
-                    auto n = ds.intersecting(disks[v.disk_index]);
+                    auto n = ds->intersecting(disks[v.disk_index]);
 
                     if (n.has_value()) {
                         const GeometryObject<T> o = n.value();
                         // Remove object from data structure
-                        ds.delete_object(o);
+                        ds->delete_object(o);
 
                         // If the object is a disk, add it to the list of neighbors
                         if (is_disk(o)) {
@@ -248,4 +223,9 @@ FindLevelsResult find_levels(
     return {levels, found_sink, distance, prev, next};
 }
 
-#endif //BARRIER_RESILIENCE_FIND_LEVELS_HPP
+// Force compiler to instantiate the template for the types we need
+template FindLevelsResult find_levels<int>(const std::vector<Edge> &blocked_edges, const std::vector<Disk<int>> &disks,
+        const int &left_border_x, const int &right_border_x, const Config<int> &config);
+
+template FindLevelsResult find_levels<double>(const std::vector<Edge> &blocked_edges, const std::vector<Disk<double>> &disks,
+        const double &left_border_x, const double &right_border_x, const Config<double> &config);

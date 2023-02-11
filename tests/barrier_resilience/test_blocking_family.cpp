@@ -3,9 +3,11 @@
 
 #include "data_structure/trivial.hpp"
 #include "utils/geometry_objects.hpp"
-#include "blocking_family.hpp"
+#include "barrier_resilience/blocking_family.hpp"
 
 TEST(TestBlockingFamily, TestEmptyPaths) {
+    const auto config = Config<int>::with_trivial_datastructure();
+
     const auto blocked_edges = std::vector<Edge>{};
 
     // Simple path from source to sink
@@ -18,7 +20,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
     int right_border = 2;
 
     // Expect single path of length 5
-    std::vector<Path> family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    std::vector<Path> family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     std::vector<Path> expected = {
             {{source, {0, true}}, {{0, true}, {0, false}}, {{0, false}, {1, true}}, {{1, true}, {1, false}},
              {{1, false}, sink}}
@@ -35,7 +37,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
     right_border = 2;
 
     // Expect two paths of length 3
-    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     // In case of different data structures, order of paths may be different.
     expected = {
             {{source, {1, true}}, {{1, true}, {1, false}}, {{1, false}, sink}},
@@ -63,7 +65,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
     right_border = 5;
 
     // Expect single path of length 7
-    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     expected = {
             {{source, {4, true}}, {{4, true}, {4, false}}, {{4, false}, {5, true}}, {{5, true}, {5, false}},
              {{5, false}, {8, true}}, {{8, true}, {8, false}}, {{8, false}, sink}}
@@ -73,6 +75,8 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
 }
 
 TEST(TestBlockingFamily, TestLongerPathsDropped) {
+    const auto config = Config<int>::with_trivial_datastructure();
+
     auto blocked_edges = std::vector<Edge>{};
 
     // Shorter and longer path.
@@ -90,7 +94,7 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
 
     // Expect only shorter path to be found.
     // (we are searching in layered residual graph, so longer path is thrown away)
-    std::vector<Path> family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    std::vector<Path> family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     // Order of paths may be different if algorithm changes.
     std::vector<Path> expected = {
             {{source, {5, true}}, {{5, true}, {5, false}}, {{5, false}, sink}},
@@ -101,7 +105,7 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
     blocked_edges = expected[0];
 
     // Expect longer path to be found.
-    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     expected = {
             {{source, {0, true}}, {{0, true}, {0, false}}, {{0, false}, {1, true}}, {{1, true}, {1, false}},
              {{1, false}, {2, true}}, {{2, true}, {2, false}}, {{2, false}, {3, true}}, {{3, true}, {3, false}},
@@ -111,6 +115,8 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
 }
 
 TEST(TestBlockingFamily, TestPathsUnreachable) {
+    const auto config = Config<int>::with_trivial_datastructure();
+
     auto blocked_edges = std::vector<Edge>{};
 
     // Shorter and longer path.
@@ -127,7 +133,7 @@ TEST(TestBlockingFamily, TestPathsUnreachable) {
     int right_border = 6;
 
     // Expect no path to be found.
-    std::vector<Path> family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    std::vector<Path> family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     std::vector<Path> expected = {};
     EXPECT_EQ(family, expected);
 
@@ -148,12 +154,14 @@ TEST(TestBlockingFamily, TestPathsUnreachable) {
                       {{4, false}, sink}}};
 
     // Expect no path to be found.
-    family = find_blocking_family<int, Trivial>(blocked_edges, disks, left_border, right_border);
+    family = find_blocking_family<int>(blocked_edges, disks, left_border, right_border, config);
     expected = {};
     EXPECT_EQ(family, expected);
 }
 
 TEST(TestBlockingFamily, TestTwoMergingPaths) {
+    const auto config = Config<int>::with_trivial_datastructure();
+
     // Two paths merging into one and diverging again.
     auto disks = std::vector<Disk<int>>{
             // Path 1
@@ -239,11 +247,11 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
     };
 
     // If first path is blocking, no path should be found.
-    auto family = find_blocking_family<int, Trivial>(first_path, disks, -1, 9);
+    auto family = find_blocking_family<int>(first_path, disks, -1, 9, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
     // If second path is blocking, no path should be found.
-    family = find_blocking_family<int, Trivial>(second_path, disks, -1, 9);
+    family = find_blocking_family<int>(second_path, disks, -1, 9, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
     // Block just two single edges.
@@ -251,12 +259,12 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
     // blocking path in every single step (we check only for previous edge and not for next edge, this is OK if on a path
     // but not ok if there is only a single edge).
     std::vector<Edge> blocking_paths = {
-            {source, {0, true}},
+            {source,      {0, true}},
             {{10, false}, sink}
     };
 
     // Expect second path to be found.
-    family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
+    family = find_blocking_family<int>(blocking_paths, disks, -1, 9, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{second_path}));
 
     // Block edges from third path.
@@ -266,7 +274,7 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
                       }};
 
     // Expect first path to be found.
-    family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
+    family = find_blocking_family<int>(blocking_paths, disks, -1, 9, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{first_path}));
 
     // Block another edge from first path.
@@ -275,7 +283,7 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
             {{7, false}, {8, true}}
     };
     // Expect third path to be found.
-    family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
+    family = find_blocking_family<int>(blocking_paths, disks, -1, 9, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{third_path}));
 
     // Block edge from merging point from one side
@@ -284,22 +292,24 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
             {{4, true},  {4, false}}
     };
     // Expect no path to be found.
-    family = find_blocking_family<int, Trivial>(blocking_paths, disks, -1, 9);
+    family = find_blocking_family<int>(blocking_paths, disks, -1, 9, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 }
 
 TEST(TestBlockingFamily, TestNoDisks) {
+    const auto config = Config<int>::with_trivial_datastructure();
+
     std::vector<Disk<int>> disks = {};
     add_index(disks);
     std::vector<Edge> no_blocked_edges = {};
 
     // Expect no path to be found.
-    auto family = find_blocking_family<int, Trivial>(no_blocked_edges, disks, 0, 1);
+    auto family = find_blocking_family<int>(no_blocked_edges, disks, 0, 1, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 
     // Still do not expect path from source to sink to be found.
     // Even we can get from source to sink in a single step, we don't count that as a valid solution.
     // (you still cannot walk from bottom to top, even if all disks are removed).
-    family = find_blocking_family<int, Trivial>(no_blocked_edges, disks, 0, 0);
+    family = find_blocking_family<int>(no_blocked_edges, disks, 0, 0, config);
     EXPECT_EQ(family, (std::vector<std::vector<Edge>>{}));
 }
