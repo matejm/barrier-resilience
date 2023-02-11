@@ -11,8 +11,8 @@ int main() {
             {{4, 4}, 1},
     };
 
-    for (int i = 0; i < disks.size(); ++i) {
-        for (int j = i + 1; j < disks.size(); ++j) {
+    for (unsigned int i = 0; i < disks.size(); ++i) {
+        for (unsigned int j = i + 1; j < disks.size(); ++j) {
             if (intersects(disks[i], disks[j])) {
                 std::cout << "Disk " << i << " intersects disk " << j << std::endl;
             }

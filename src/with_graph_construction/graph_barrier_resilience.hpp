@@ -33,6 +33,9 @@ int graph_barrier_resilience_number_of_disks(const std::vector<Disk<T>> &disks,
         case Algorithm::EvenTarjan:
             return even_tarjan_max_flow(graph, left_border_index, right_border_index);
     }
+
+    // To keep compiler happy.
+    return 0;
 }
 
 // Returns indices of specific disks that need to be removed.
