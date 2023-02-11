@@ -33,11 +33,11 @@ std::string objects_to_svg(const std::vector<GeometryObject<T>> &objects, std::v
                 [](const Disk<int> &disk) { return disk.center.x + disk.radius; },
         });
         min_y = std::min(min_y, object | match{
-                [min_y](const Border<int> &border) { return min_y; },
+                [min_y](const Border<int> &) { return min_y; },
                 [](const Disk<int> &disk) { return disk.center.y - disk.radius; },
         });
         max_y = std::max(max_y, object | match{
-                [max_y](const Border<int> &border) { return max_y; },
+                [max_y](const Border<int> &) { return max_y; },
                 [](const Disk<int> &disk) { return disk.center.y + disk.radius; },
         });
     }
@@ -57,7 +57,7 @@ std::string objects_to_svg(const std::vector<GeometryObject<T>> &objects, std::v
        << "\">" << std::endl;
 
     // Show objects.
-    for (int i = 0; i < objects.size(); ++i) {
+    for (unsigned int i = 0; i < objects.size(); ++i) {
         const auto &object = objects[i];
         // Should be object marked as removed.
         bool to_remove_object = std::find(to_remove.begin(), to_remove.end(), i) != to_remove.end();

@@ -15,7 +15,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
             {{0, 0}, 1},
             {{1, 1}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = -1;
     int right_border = 2;
 
@@ -32,7 +32,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
             {{0, 0},  2},
             {{0, 10}, 2},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = -1;
     right_border = 2;
 
@@ -60,7 +60,7 @@ TEST(TestBlockingFamily, TestEmptyPaths) {
             {{2, 14}, 1},
             {{2, 16}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = -1;
     right_border = 5;
 
@@ -88,7 +88,7 @@ TEST(TestBlockingFamily, TestLongerPathsDropped) {
             {{4, 4},  1},
             {{2, 30}, 3},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = -1;
     int right_border = 5;
 
@@ -127,7 +127,7 @@ TEST(TestBlockingFamily, TestPathsUnreachable) {
             {{2, 4}, 1},
             {{4, 4}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = -1;
     // Unreachable sink.
     int right_border = 6;
@@ -185,7 +185,7 @@ TEST(TestBlockingFamily, TestTwoMergingPaths) {
             {{6, 4}, 1},
             {{8, 4}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
 
     std::vector<Edge> no_blocked_edges = {};
 
@@ -300,7 +300,7 @@ TEST(TestBlockingFamily, TestNoDisks) {
     const auto config = Config<int>::with_trivial_datastructure();
 
     std::vector<Disk<int>> disks = {};
-    add_index(disks);
+    add_index_to_disks(disks);
     std::vector<Edge> no_blocked_edges = {};
 
     // Expect no path to be found.

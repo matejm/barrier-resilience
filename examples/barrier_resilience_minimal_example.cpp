@@ -24,7 +24,7 @@ int main() {
     auto to_remove = graph_barrier_resilience_disks(disks, left, right);
 
     std::cout << "To remove: ";
-    for (int i = 0; i < to_remove.size(); ++i) {
+    for (unsigned int i = 0; i < to_remove.size(); ++i) {
         std::cout << to_remove[i] << " ";
     }
     std::cout << std::endl;

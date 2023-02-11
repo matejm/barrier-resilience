@@ -16,8 +16,8 @@ TEST(TestFordFulkerson, TestBfs) {
             {6},
     };
     std::map<std::pair<int, int>, bool> blocked_edges;
-    for (int i = 0; i < g.size(); ++i) {
-        for (int j: g[i]) {
+    for (unsigned int i = 0; i < g.size(); ++i) {
+        for (unsigned int j: g[i]) {
             blocked_edges[{i, j}] = false;
         }
     }
@@ -61,18 +61,18 @@ TEST(TestFordFulkerson, TestBfs) {
 TEST(TestFordFulkerson, TestReconstructPath) {
     std::vector<int> parent = {-1, 0, 0, 2, 3, 4, -1, -1};
 
-    ASSERT_EQ(reconstruct_path(parent, 0, 5), std::vector<int>({0, 2, 3, 4, 5}));
-    ASSERT_EQ(reconstruct_path(parent, 0, 4), std::vector<int>({0, 2, 3, 4}));
-    ASSERT_EQ(reconstruct_path(parent, 0, 0), std::vector<int>({0}));
+    ASSERT_EQ(reconstruct_path(parent, 5), std::vector<int>({0, 2, 3, 4, 5}));
+    ASSERT_EQ(reconstruct_path(parent, 4), std::vector<int>({0, 2, 3, 4}));
+    ASSERT_EQ(reconstruct_path(parent, 0), std::vector<int>({0}));
 
     parent = {-1, -1, 0, -1, -1, -1, -1, -1};
-    ASSERT_EQ(reconstruct_path(parent, 0, 2), std::vector<int>({0, 2}));
+    ASSERT_EQ(reconstruct_path(parent, 2), std::vector<int>({0, 2}));
 
     // No path - could be defined in some other way, but this is fine as we don't use it.
-    ASSERT_EQ(reconstruct_path(parent, 0, 3), std::vector<int>({3}));
+    ASSERT_EQ(reconstruct_path(parent, 3), std::vector<int>({3}));
 
     parent = {-1, 2, 0, 1, 5, 3, 5, 6, -1, -1, 7};
-    ASSERT_EQ(reconstruct_path(parent, 0, 10), std::vector<int>({0, 2, 1, 3, 5, 6, 7, 10}));
+    ASSERT_EQ(reconstruct_path(parent, 10), std::vector<int>({0, 2, 1, 3, 5, 6, 7, 10}));
 }
 
 TEST(TestFordFulkerson, TestFordFulkerson) {

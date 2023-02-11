@@ -18,7 +18,7 @@ struct Point {
 
 // Disk with center and radius
 template<class T>
-struct Disk {
+class Disk {
     // Helper value, used to identify disks in the data structure.
     int index;
 public:
@@ -28,10 +28,6 @@ public:
     Disk(Point<T> center, T radius) : center(center), radius(radius) {
         // Set index to -1, will be set later if needed.
         index = -1;
-    }
-
-    void set_index(int index_) {
-        this->index = index_;
     }
 
     int get_index() const {
@@ -51,7 +47,19 @@ public:
                 disk_to_transformed_vertex(this, false),
         };
     }
+
+    // Friend - this method can set index of a disk.
+    template<class S>
+    friend void add_index_to_disks(std::vector<Disk<S>> &disks);
 };
+
+// Add indices to disks.
+template<class T>
+void add_index_to_disks(std::vector<Disk<T>> &disks) {
+    for (unsigned int i = 0; i < disks.size(); ++i) {
+        disks[i].index = i;
+    }
+}
 
 // Left or right border - vertical segment with given x coordinate
 template<class T>
@@ -66,6 +74,7 @@ struct Border {
     }
 };
 
+// Geometry object is either a disk or a border.
 template<class T>
 using GeometryObject = std::variant<Disk<T>, Border<T>>;
 
@@ -160,14 +169,6 @@ bool intersects(const GeometryObject<T> &g1, const GeometryObject<T> &g2) {
 template<class T>
 TransformedVertex disk_to_transformed_vertex(const Disk<T> &disk, bool inbound) {
     return {disk.get_index(), inbound};
-}
-
-// Add indices to disks.
-template<class T>
-void add_index(std::vector<Disk<T>> &disks) {
-    for (int i = 0; i < disks.size(); ++i) {
-        disks[i].index = i;
-    }
 }
 
 

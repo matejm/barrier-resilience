@@ -31,7 +31,7 @@ int barrier_resilience_number_of_disks(std::vector<Disk<T>> &disks,
                                        const T &right_border_x,
                                        const Config<T> &config) {
     // Set index to each disk (so we can track them in the data structure)
-    add_index<T>(disks);
+    add_index_to_disks(disks);
 
     // We won't have a family of paths, but just a collection of all edges.
     // (that way, we can compute direct sum of all edges)

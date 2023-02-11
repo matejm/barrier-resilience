@@ -31,7 +31,7 @@ bool bfs(const Graph &g, const std::map<std::pair<int, int>, bool> &blocked_edge
 }
 
 // Reconstruction of path from start to end using parent vector.
-std::vector<int> reconstruct_path(const std::vector<int> &parent, int start, int end) {
+std::vector<int> reconstruct_path(const std::vector<int> &parent, int end) {
     std::vector<int> path;
     // We start from end and go backwards.
     int current = end;
@@ -64,7 +64,7 @@ std::vector<std::pair<int, int>> get_min_cut(const Graph &graph,
     // - ending node is not visited
     // - edge is blocked (should be anyway)
     // - edge is from original graph (not from residual graph)
-    for (int i = 0; i < graph.size(); i++) {
+    for (unsigned int i = 0; i < graph.size(); i++) {
         if (!visited[i]) {
             // Skip unvisited nodes
             continue;
@@ -72,7 +72,7 @@ std::vector<std::pair<int, int>> get_min_cut(const Graph &graph,
         // Look over original graph (not residual graph).
         for (int j: graph[i]) {
             if (!visited[j] && blocked_edges[{i, j}]) {
-                min_cut.push_back({i, j});
+                min_cut.emplace_back(i, j);
             }
         }
     }
@@ -84,7 +84,7 @@ std::vector<std::pair<int, int>> get_min_cut(const Graph &graph,
 void print_residual_graph(
         const Graph &g, int start, int end, const std::map<std::pair<int, int>, bool> &blocked_edges) {
     std::cout << "Residual graph:" << std::endl;
-    for (int i = 0; i < g.size(); i++) {
+    for (int i = 0; i < static_cast<int>(g.size()); i++) {
         if (i == start) {
             std::cout << "Start: ";
         } else if (i == end) {
@@ -110,7 +110,7 @@ std::pair<Graph, std::map<std::pair<int, int>, bool>> prepare_residual_graph(con
     std::map<std::pair<int, int>, bool> blocked_edges;
 
     // Add edges to residual graph.
-    for (int u = 0; u < graph.size(); u++) {
+    for (unsigned int u = 0; u < graph.size(); u++) {
         for (int v: graph[u]) {
             // Forward edge - unblocked.
             residual_graph[u].push_back(v);
@@ -142,10 +142,10 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> ford_fulkerson(const
     while (bfs(residual_graph, blocked_edges, parent, visited, start, end)) {
 
         // Reconstruct path from start to end.
-        auto path = reconstruct_path(parent, start, end);
+        auto path = reconstruct_path(parent, end);
 
         // Unblock all reverse edges on path and block all forward edges on path.
-        for (int i = 0; i < path.size() - 1; i++) {
+        for (unsigned int i = 0; i < path.size() - 1; i++) {
             int u = path[i];
             int v = path[i + 1];
             blocked_edges[{u, v}] = true;

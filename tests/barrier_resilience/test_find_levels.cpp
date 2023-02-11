@@ -13,7 +13,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{0, 0}, 1},
             {{1, 1}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = -1;
     int right_border = 2;
 
@@ -42,7 +42,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{0, 3}, 2},
             {{2, 1}, 2},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = -1;
     right_border = 3;
 
@@ -77,7 +77,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{5, 0}, 2},
             {{5, 5}, 2},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = -1;
     right_border = 6;
 
@@ -124,7 +124,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{3, -4}, 1},
             {{3, -6}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = 0;
     right_border = 6;
 
@@ -172,7 +172,7 @@ TEST(TestFindLevels, TestEmptyPaths) {
             {{0, 5},  2},
             {{0, 15}, 3},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = -3;
     right_border = 3;
 
@@ -205,7 +205,7 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
             {{3, 0},  1},
             {{5, 0},  1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = 0;
     int right_border = 6;
 
@@ -240,7 +240,7 @@ TEST(TestFindLevels, TestEmptyPathsLongerPathDropped) {
             {{3, -6}, 1},
             {{3, -8}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = 0;
     right_border = 6;
 
@@ -289,7 +289,7 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
             {{3, 0}, 1},
             {{6, 0}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = 0;
     int right_border = 7;
 
@@ -324,7 +324,7 @@ TEST(TestFindLevels, TestEmptyPathsUnreachable) {
             {{3, 10}, 1},
             {{6, 10}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = 0;
     right_border = 7;
 
@@ -365,7 +365,7 @@ TEST(TestFindLevels, TestUnreachable) {
             {{1, 0}, 1},
             {{3, 0}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = 0;
     int right_border = 5;
 
@@ -391,7 +391,7 @@ TEST(TestFindLevels, TestUnreachable) {
             {{5, 4}, 3},
             {{2, 8}, 3},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = 0;
     right_border = 7;
 
@@ -427,7 +427,7 @@ TEST(TestFindLevels, TestReachable) {
             {{1, 5}, 1},
             {{3, 5}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = 0;
     int right_border = 4;
 
@@ -468,7 +468,7 @@ TEST(TestFindLevels, TestReachable) {
             {{2, 2}, 1},
             {{2, 4}, 1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     left_border = -1;
     right_border = 3;
 
@@ -528,7 +528,7 @@ TEST(TestFindLevels, TestLongerPathDropped) {
             // 1 disk path
             {{3, 20}, 3},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = 0;
     int right_border = 4;
 
@@ -575,7 +575,7 @@ TEST(TestFindLevels, AdditionalTests) {
             {{2, 12}, 1},
             {{2, 8},  1},
     };
-    add_index(disks);
+    add_index_to_disks(disks);
     int left_border = -1;
     int right_border = 5;
 
@@ -594,7 +594,7 @@ TEST(TestFindLevels, NoDisks) {
 
     const auto blocked_edges = std::vector<Edge>{};
     auto disks = std::vector<Disk<int>>{};
-    add_index(disks);
+    add_index_to_disks(disks);
 
     // No path
     auto r = find_levels<int>(blocked_edges, disks, 0, 1, config);

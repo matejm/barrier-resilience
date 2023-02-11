@@ -17,9 +17,9 @@ int main() {
     };
 
     auto graph = objects_to_graph(static_cast<std::vector<GeometryObject<int>>>(objects));
-    for (int i = 0; i < graph.size(); ++i) {
+    for (unsigned int i = 0; i < graph.size(); ++i) {
         std::cout << "Object " << i << " intersects with objects: ";
-        for (int j = 0; j < graph[i].size(); ++j) {
+        for (unsigned int j = 0; j < graph[i].size(); ++j) {
             std::cout << graph[i][j] << " ";
         }
         std::cout << std::endl;
@@ -34,9 +34,9 @@ int main() {
 
     graph = generate_expanded_graph(disks, 0, 2);
 
-    for (int i = 0; i < graph.size(); ++i) {
+    for (unsigned int i = 0; i < graph.size(); ++i) {
         std::cout << i << ": ";
-        for (int j = 0; j < graph[i].size(); ++j) {
+        for (unsigned int j = 0; j < graph[i].size(); ++j) {
             std::cout << graph[i][j] << " ";
         }
         std::cout << std::endl;

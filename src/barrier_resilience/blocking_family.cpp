@@ -105,7 +105,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
 
                 // Inbound vertex of disk, we have an edge v->u in residual graph.
                 // This edge is not in any path, see article for details.
-                auto u = TransformedVertex{disk.index, true};
+                auto u = TransformedVertex{disk.get_index(), true};
 
                 if (explored[u]) {
                     // Vertex u is already explored, continue with next disk
@@ -159,13 +159,13 @@ std::vector<Path> find_blocking_family(
     // Construct data structure for each odd level
     // data_structures[i] (for odd i) will contain vertices v_in
     auto data_structures = std::vector<DataStructure<T> *>(r.distance + 1);
-    for (int i = 0; i < data_structures.size(); i++) {
+    for (unsigned int i = 0; i < data_structures.size(); i++) {
         data_structures[i] = config.data_structure_constructor();
     }
 
     // A little change from the article:
     // We do not need to build for last level, because it contains only sink (therefore < instead of <=).
-    for (unsigned int i = 1; i < r.distance; i += 2) {
+    for (int i = 1; i < r.distance; i += 2) {
         // For each odd i we build a data structure ds for inbound vertices of level i
         std::vector<GeometryObject<T>> inbound_vertices;
         for (const auto &v: vertices_by_level[i]) {
@@ -221,7 +221,7 @@ std::vector<Path> find_blocking_family(
 
 static Path list_of_vertices_to_path(const std::vector<TransformedVertex> &vertices) {
     Path path;
-    for (int i = 1; i < vertices.size(); i++) {
+    for (unsigned int i = 1; i < vertices.size(); i++) {
         path.push_back(Edge(vertices[i - 1], vertices[i]));
     }
     return path;

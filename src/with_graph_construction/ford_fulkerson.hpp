@@ -16,7 +16,7 @@ bool bfs(const Graph &g, const std::map<std::pair<int, int>, bool> &blocked_edge
          std::vector<bool> &visited, int start, int end);
 
 // Reconstruction of path from start to end using parent vector.
-std::vector<int> reconstruct_path(const std::vector<int> &parent, int start, int end);
+std::vector<int> reconstruct_path(const std::vector<int> &parent, int end);
 
 std::pair<Graph, std::map<std::pair<int, int>, bool>> prepare_residual_graph(const Graph &graph);
 

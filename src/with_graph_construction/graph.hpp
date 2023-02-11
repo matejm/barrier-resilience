@@ -48,7 +48,7 @@ Graph generate_expanded_graph(const std::vector<Disk<T>> &disks, T left_border_x
     int start_index = graph_start_index(graph);
     int end_index = graph_end_index(graph);
 
-    for (int i = 0; i < disks.size(); ++i) {
+    for (unsigned int i = 0; i < disks.size(); ++i) {
         // All connections from start
         if (intersects(disks[i], left_border)) {
             graph[start_index].push_back(graph_inbound_index(graph, i));
@@ -64,8 +64,8 @@ Graph generate_expanded_graph(const std::vector<Disk<T>> &disks, T left_border_x
     }
 
     // Add edges between disks.
-    for (int i = 0; i < disks.size(); ++i) {
-        for (int j = i + 1; j < disks.size(); ++j) {
+    for (unsigned int i = 0; i < disks.size(); ++i) {
+        for (unsigned int j = i + 1; j < disks.size(); ++j) {
             if (intersects(disks[i], disks[j])) {
                 // Add connections from disks i and j
                 graph[graph_outbound_index(graph, i)].push_back(graph_inbound_index(graph, j));
@@ -81,8 +81,8 @@ template<class T>
 Graph objects_to_graph(const std::vector<GeometryObject<T>> &objects) {
     // graph[i] is the list of indices of disks that ith-disk intersects.
     auto graph = Graph(objects.size());
-    for (int i = 0; i < objects.size(); ++i) {
-        for (int j = i + 1; j < objects.size(); ++j) {
+    for (unsigned int i = 0; i < objects.size(); ++i) {
+        for (unsigned int j = i + 1; j < objects.size(); ++j) {
             if (intersects(objects[i], objects[j])) {
                 // Symmetric graph.
                 graph[i].push_back(j);

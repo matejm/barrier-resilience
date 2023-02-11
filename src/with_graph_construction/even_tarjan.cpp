@@ -5,7 +5,7 @@ Graph create_bfs_tree(std::vector<int> parent) {
     // Create empty graph.
     Graph g(parent.size());
     // Add edges to the graph.
-    for (int i = 0; i < parent.size(); i++) {
+    for (unsigned int i = 0; i < parent.size(); i++) {
         if (parent[i] != -1) {
             // Add edge from parent to child.
             g[parent[i]].push_back(i);
@@ -93,7 +93,6 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> even_tarjan(const Gr
     // Visited vertices for BFS.
     std::vector<bool> visited(graph.size(), false);
 
-    int phase = 0;
     int flow = 0;
 
     // Perform BFS until there is no path from start to end.
@@ -106,7 +105,7 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> even_tarjan(const Gr
 
         // Update residual graph.
         for (auto path: paths) {
-            for (int i = 0; i < path.size() - 1; i++) {
+            for (unsigned int i = 0; i < path.size() - 1; i++) {
                 // Block edge from path[i] to path[i + 1].
                 blocked_edges[{path[i], path[i + 1]}] = true;
                 // Unblock edge from path[i + 1] to path[i].
@@ -120,7 +119,6 @@ std::tuple<Graph, std::map<std::pair<int, int>, bool>, int> even_tarjan(const Gr
 
         // Increase flow value.
         flow += paths.size();
-        phase++;
     }
 
     return {residual_graph, blocked_edges, flow};
