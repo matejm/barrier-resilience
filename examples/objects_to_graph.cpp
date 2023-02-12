@@ -36,8 +36,8 @@ int main() {
 
     for (unsigned int i = 0; i < graph.size(); ++i) {
         std::cout << i << ": ";
-        for (unsigned int j = 0; j < graph[i].size(); ++j) {
-            std::cout << graph[i][j] << " ";
+        for (int v: graph[i]) {
+            std::cout << v << " ";
         }
         std::cout << std::endl;
     }
