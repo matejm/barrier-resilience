@@ -1,23 +1,32 @@
 #include "barrier_resilience.hpp"
 
-std::vector<Edge> direct_sum(const std::vector<Edge> &edges, const std::vector<Path> &paths) {
-    std::unordered_map<Edge, int, EdgeHash> edge_count = {};
+std::vector<Edge> update_edges(std::vector<Edge> &edges, const std::vector<Path> &paths) {
+    // Add edges from paths to vector of edges.
+    // Duplicate edges should not appear in the result if the steps before were correct.
+    // What can happen is that an edge appears as v -> u and we also have found a path including u -> v. In this case, we
+    // should discard both edges.
+
+    std::unordered_map<Edge, bool, EdgeHash> edges_to_keep;
 
     for (const auto &edge: edges) {
-        edge_count[edge] = true;
+        edges_to_keep[edge] = true;
     }
     for (const auto &path: paths) {
         for (const auto &edge: path) {
-            edge_count[edge] = true;
+            // Check if reverse edge is already in a map.
+            // If it is, remove it and don't add the current edge.
+            Edge reverse_edge = Edge(edge.to, edge.from);
+            if (edges_to_keep.contains(reverse_edge)) {
+                edges_to_keep.erase(reverse_edge);
+            } else {
+                edges_to_keep[edge] = true;
+            }
         }
     }
 
-    // Include only edges that appear exactly once.
-    // If edge appears twice, discard it.
-    // An edge should not appear more than twice.
     std::vector<Edge> result = {};
-    for (const auto &p: edge_count) {
-        if (p.second == 1) {
+    for (const auto &p: edges_to_keep) {
+        if (p.second == true) {
             result.push_back(p.first);
         }
     }
@@ -56,7 +65,7 @@ BlockingPathsResult get_blocking_paths(std::vector<Disk<T>> disks,
         path_count += blocking_family.size();
 
         // Perform direct sum of all edges in the family.
-        edges = direct_sum(edges, blocking_family);
+        edges = update_edges(edges, blocking_family);
     }
 
     return BlockingPathsResult{path_count, edges};
@@ -93,10 +102,10 @@ std::vector<int> barrier_resilience_disks(std::vector<Disk<T>> &disks,
 
     std::vector<int> blocking_disks;
 
-    // There are two gropus of disks
+    // There are two groups of disks
     // - disks where level(u_inbound) < inf and level(u_outbound) = inf
     // - disks where level(u_inbound) = inf and level(prev(u_inbound)) < inf
-    for (unsigned int i = 0; i < disks.size(); i++) {
+    for (int i = 0; i < static_cast<int>(disks.size()); i++) {
         const auto &disk = disks[i];
         TransformedVertex u_inbound = {disk.get_index(), true};
 
@@ -118,7 +127,7 @@ std::vector<int> barrier_resilience_disks(std::vector<Disk<T>> &disks,
     }
 
     // Check that number of found disks is the same as number of blocking paths
-    assert(blocking_disks.size() == r.path_count);
+    assert(blocking_disks.size() == static_cast<unsigned int>(r.path_count));
 
     return blocking_disks;
 }

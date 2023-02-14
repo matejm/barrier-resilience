@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <cassert>
 #include "utils/geometry_objects.hpp"
 #include "blocking_family.hpp"
 #include "config.hpp"

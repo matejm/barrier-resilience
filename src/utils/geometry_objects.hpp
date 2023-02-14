@@ -51,6 +51,10 @@ public:
     // Friend - this method can set index of a disk.
     template<class S>
     friend void add_index_to_disks(std::vector<Disk<S>> &disks);
+
+    friend std::ostream &operator<<(std::ostream &o, Disk const &disk) {
+        return o << "Disk(" << disk.center.x << ", " << disk.center.y << ", r=" << disk.radius << ")";
+    }
 };
 
 // Add indices to disks.
@@ -71,6 +75,10 @@ struct Border {
     // Equality operator.
     bool operator==(const Border<T> &other) const {
         return x == other.x && left == other.left;
+    }
+
+    friend std::ostream &operator<<(std::ostream &o, Border const &border) {
+        return o << "Border(" << border.x << ", " << (border.left ? "left" : "right") << ")";
     }
 };
 

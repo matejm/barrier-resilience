@@ -6,7 +6,7 @@
 #include "utils/geometry_objects.hpp"
 
 const int borderWidthThreshold = 1;
-const int svgSizeMultiplier = 100;
+const int svgSizeMultiplier = 50;
 
 // Converts objects to svg format.
 // Far from perfect, but very useful for debugging.
@@ -71,11 +71,21 @@ std::string objects_to_svg(const std::vector<GeometryObject<T>> &objects, std::v
                        << "\" style=\"stroke:rgb(0,0,0);stroke-width:2\" />" << std::endl;
                 },
                 [&ss, min_x, min_y, to_remove_object](const Disk<int> &disk) {
-                    ss << "<circle cx=\"" << svgSizeMultiplier * disk.center.x - min_x
-                       << "\" cy=\"" << svgSizeMultiplier * disk.center.y - min_y
-                       << "\" r=\"" << svgSizeMultiplier * disk.radius
+                    int cx = svgSizeMultiplier * disk.center.x - min_x;
+                    int cy = svgSizeMultiplier * disk.center.y - min_y;
+                    int r = svgSizeMultiplier * disk.radius;
+
+                    ss << "<g>" << std::endl
+                       << "<circle cx=\"" << cx
+                       << "\" cy=\"" << cy
+                       << "\" r=\"" << r
                        << "\" stroke=\"" << (to_remove_object ? "red" : "black")
-                       << "\" stroke-width=\"1\" fill=\"none\" />" << std::endl;
+                       << "\" stroke-width=\"1\" fill=\"none\" />" << std::endl
+                       << "<text x=\"" << cx
+                       << "\" y=\"" << cy
+                       << "\" text-anchor=\"middle\" stroke=\"" << (to_remove_object ? "red" : "black")
+                       << "\" stroke-width=\"1\">" << disk.get_index() << "</text>" << std::endl
+                       << "</g>" << std::endl;
                 },
         };
     }

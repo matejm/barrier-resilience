@@ -4,6 +4,7 @@
 #include <vector>
 #include <ranges>
 #include <optional>
+#include <cassert>
 #include "utils/geometry_objects.hpp"
 #include "utils/transformed_graph.hpp"
 #include "data_structure/data_structure.hpp"

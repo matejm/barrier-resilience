@@ -22,7 +22,7 @@ public:
     }
 
     friend std::ostream &operator<<(std::ostream &o, TransformedVertex const &v) {
-        return o << "(" << v.disk_index << ", " << std::boolalpha << v.inbound << ")";
+        return o << v.disk_index << ":" << (v.inbound ? "in" : "out");
     };
 };
 

@@ -19,13 +19,14 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
         // Function which tells us if we can get to sink from given disk without any additional hops
         const std::function<bool(Disk<T>)> &has_edge_to_sink,
         std::vector<TransformedVertex> &current_path) {
-
     // Add vertex to path
     current_path.push_back(v);
     std::optional<std::vector<TransformedVertex>> path;
 
     if (current_level % 2 == 1) {
         // Odd level (v is inbound vertex)
+        assert(v.inbound);
+
         if (!prev.contains(v)) {
             // Inbound vertex v is not on a path -> continue DFS at outbound vertex of same disk
             auto u = TransformedVertex{v.disk_index, false};
@@ -47,6 +48,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
         }
     } else {
         // Even level (v is outbound vertex)
+        assert(!v.inbound);
 
         bool is_source = v == source;
 
@@ -107,14 +109,16 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
                 // This edge is not in any path, see article for details.
                 auto u = TransformedVertex{disk.get_index(), true};
 
+                // Remove disk from data structure
+                ds[current_level + 1]->delete_object(disk);
+
                 if (explored[u]) {
                     // Vertex u is already explored, continue with next disk
                     continue;
                 }
 
-                // Mark explored & remove disk from data structure
+                // Mark explored
                 explored[u] = true;
-                ds[current_level + 1]->delete_object(disk);
 
                 path = dfs_explore(ds, disks, explored, prev, next,
                                    u, current_level + 1,
