@@ -183,7 +183,8 @@ TEST(TestBarrierResilience, TestDisksParallelPaths) {
 }
 
 // Test bug I found in my implementation on a random test case.
-TEST(TestBarrierResilience, TestDisksBugfix) {
+// Helped me to find a bug in calculating direct sum of edges.
+TEST(TestBarrierResilience, TestDisksBugfixJoinEdges) {
     const auto config = Config<int>::with_trivial_datastructure();
 
     int left_border_x = 0, right_border_x = 10;
@@ -204,6 +205,35 @@ TEST(TestBarrierResilience, TestDisksBugfix) {
     ASSERT_EQ(barrier_resilience_number_of_disks(disks, left_border_x, right_border_x, config), 3);
 }
 
+// Tests another bug I found in my implementation on a random test case.
+// Bug was not considering that we need to run DFS along edges of a tree and went to deep on wrong path.
+TEST(TestBarrierResilience, TestDisksBug) {
+    const auto config = Config<int>::with_trivial_datastructure();
+
+    int left_border_x = 1, right_border_x = 13;
+    std::vector<Disk<int>> disks = {
+            {{1,  10}, 4},
+            {{6,  9},  3},
+            {{5,  6},  3},
+            {{10, 13}, 3},
+            {{37, 0},  2},
+            {{34, 0},  1},
+            {{10, 6},  2},
+            {{12, 17}, 4},
+            {{36, 0},  3},
+            {{8,  17}, 3},
+            {{8,  3},  3},
+            {{2,  8},  3},
+            {{12, 4},  3},
+            {{8,  12}, 2},
+            {{4,  11}, 4},
+    };
+
+    auto d = barrier_resilience_disks(disks, left_border_x, right_border_x, config);
+    std::sort(d.begin(), d.end());
+    ASSERT_EQ(d, std::vector<int>({0, 11, 14}));
+}
+
 TEST(TestBarrierResilience, TestMatchingWithSimplerImplementation) {
     const auto config = Config<int>::with_trivial_datastructure();
 
@@ -211,7 +241,7 @@ TEST(TestBarrierResilience, TestMatchingWithSimplerImplementation) {
 
     // Test if responses from graph implementation always match responses from this implementation.
     // Returned disks can be different, that's why we are testing only for same number of disks.
-    for (int problem_size = 1; problem_size < 20; problem_size++) {
+    for (int problem_size = 1; problem_size < 50; problem_size++) {
         // 10 random tests
         for (int _ = 0; _ < 10; ++_) {
             int width = 1 + random() % 20;

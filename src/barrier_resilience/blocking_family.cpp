@@ -6,6 +6,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
         // Used to query intersecting disks.
         std::vector<DataStructure<T> *> &ds,
         const std::vector<Disk<T>> &disks,
+        std::unordered_map<TransformedVertex, int, TransformedVertexHash> levels,
         // Visited vertices. Source and sink are never marked as visited; we can visit them multiple times.
         std::unordered_map<TransformedVertex, bool, TransformedVertexHash> &explored,
         // Previous vertex in the path (if vertex is on any of paths in given path family which defines residual graph)
@@ -32,7 +33,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
             auto u = TransformedVertex{v.disk_index, false};
             if (!explored[u]) {
                 explored[u] = true;
-                path = dfs_explore(ds, disks, explored, prev, next,
+                path = dfs_explore(ds, disks, levels, explored, prev, next,
                                    u, current_level + 1,
                                    sink_level, left_border, has_edge_to_sink, current_path);
             }
@@ -40,10 +41,16 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
             // Inbound vertex v is on a path -> go back to previous vertex (if not explored yet)
             auto p = prev[v];
             if (!explored[p]) {
-                explored[p] = true;
-                path = dfs_explore(ds, disks, explored, prev, next,
-                                   p, current_level + 1,
-                                   sink_level, left_border, has_edge_to_sink, current_path);
+                // Minor correction of the article: don't always go back in the path. If level is not current_level + 1,
+                // then we are going to vertex which has a level <= current_level. This means that there is a better
+                // path in a tree to this vertex. We don't want to go back to this vertex from here, because then this
+                // won't be a tree anymore.
+                if (levels[p] == current_level + 1) {
+                    explored[p] = true;
+                    path = dfs_explore(ds, disks, levels, explored, prev, next,
+                                       p, current_level + 1,
+                                       sink_level, left_border, has_edge_to_sink, current_path);
+                }
             }
         }
     } else {
@@ -75,13 +82,16 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
                 // Then next vertex is inbound vertex of same disk (go back)
                 auto v_in = TransformedVertex{v.disk_index, true};
                 if (!explored[v_in]) {
-                    // Remove disk from data structure[current_level + 1]
-                    ds[current_level + 1]->delete_object(disks[v.disk_index]);
+                    // Similar as above, do not continue in the path if level is not current_level + 1
+                    if (levels[v_in] == current_level + 1) {
+                        // Remove disk from data structure[current_level + 1]
+                        ds[current_level + 1]->delete_object(disks[v.disk_index]);
 
-                    explored[v_in] = true;
-                    path = dfs_explore(ds, disks, explored, prev, next,
-                                       v_in, current_level + 1,
-                                       sink_level, left_border, has_edge_to_sink, current_path);
+                        explored[v_in] = true;
+                        path = dfs_explore(ds, disks, levels, explored, prev, next,
+                                           v_in, current_level + 1,
+                                           sink_level, left_border, has_edge_to_sink, current_path);
+                    }
                 }
             }
 
@@ -120,7 +130,7 @@ std::optional<std::vector<TransformedVertex>> dfs_explore(
                 // Mark explored
                 explored[u] = true;
 
-                path = dfs_explore(ds, disks, explored, prev, next,
+                path = dfs_explore(ds, disks, levels, explored, prev, next,
                                    u, current_level + 1,
                                    sink_level, left_border, has_edge_to_sink, current_path);
 
@@ -145,6 +155,13 @@ std::vector<Path> find_blocking_family(
         const T left_border_x,
         const T right_border_x,
         const Config<T> &config) {
+
+    if (disks.empty()) {
+        // No disks -> nothing to find
+        // (path source -> sink without any disks does not count as a path and happens only in case when left and right
+        // border are the same or left border is to the right of right border)
+        return {};
+    }
 
     // First, compute level for each vertex
     auto r = find_levels<T>(blocked_edges, disks, left_border_x, right_border_x, config);
@@ -199,6 +216,7 @@ std::vector<Path> find_blocking_family(
         auto new_path = dfs_explore<T>(
                 data_structures,
                 disks,
+                r.levels,
                 explored,
                 r.prev,
                 r.next,
@@ -218,6 +236,9 @@ std::vector<Path> find_blocking_family(
 
         new_paths.push_back(list_of_vertices_to_path(new_path.value()));
     }
+
+    // If sink is reachable, then there is always a blocking family.
+    assert(r.reachable && !new_paths.empty());
 
     // Found a blocking family
     return new_paths;
