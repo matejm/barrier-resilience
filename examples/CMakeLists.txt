@@ -9,3 +9,6 @@ target_link_libraries(barrier_resilience_example barrier_resilience)
 
 add_executable(barrier_resilience_minimal_example barrier_resilience_minimal_example.cpp)
 target_link_libraries(barrier_resilience_minimal_example barrier_resilience)
+
+add_executable(execute_with_input execute_with_input.cpp)
+target_link_libraries(execute_with_input barrier_resilience)
