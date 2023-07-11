@@ -48,6 +48,10 @@ public:
         };
     }
 
+    void unsafe_set_index(int index_) {
+        index = index_;
+    }
+
     // Friend - this method can set index of a disk.
     template<class S>
     friend void add_index_to_disks(std::vector<Disk<S>> &disks);
