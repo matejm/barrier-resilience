@@ -101,10 +101,10 @@ public:
 
                 // Memorize disk index.
                 auto point = HPoint<T>{disk.center.x, disk.center.y};
-//                if (disks_indices.find(point) == disks_indices.end()) {
-//                    disks_indices[point] = std::vector<int>();
-//                }
-//                disks_indices[point].push_back(disk.get_index());
+                if (disks_indices.find(point) == disks_indices.end()) {
+                    disks_indices[point] = std::vector<int>();
+                }
+                disks_indices[point].push_back(disk.get_index());
 
                 // Check if radius is the same for all disks.
                 if (radius == 0) {
