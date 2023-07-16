@@ -13,6 +13,15 @@
 template<class T>
 using Cartesian = CGAL::Simple_cartesian<T>;
 
+// Possible strategies:
+// - Orthogonal_k_neighbor_search
+// - Orthogonal_incremental_neighbor_search
+// - K_neighbor_search
+// - Incremental_neighbor_search
+// We use the 2nd one because:
+// - it's incremental (allowing us to add and remove points).
+// - it's orthogonal (great for Minkowski metric vs K_neighbor_search which is for Manhattan metric).
+// https://doc.cgal.org/latest/Spatial_searching/index.html
 template<class T>
 using NN = CGAL::Orthogonal_incremental_neighbor_search<CGAL::Search_traits_2<Cartesian<T>>>;
 
@@ -92,10 +101,10 @@ public:
 
                 // Memorize disk index.
                 auto point = HPoint<T>{disk.center.x, disk.center.y};
-                if (disks_indices.find(point) == disks_indices.end()) {
-                    disks_indices[point] = std::vector<int>();
-                }
-                disks_indices[point].push_back(disk.get_index());
+//                if (disks_indices.find(point) == disks_indices.end()) {
+//                    disks_indices[point] = std::vector<int>();
+//                }
+//                disks_indices[point].push_back(disk.get_index());
 
                 // Check if radius is the same for all disks.
                 if (radius == 0) {

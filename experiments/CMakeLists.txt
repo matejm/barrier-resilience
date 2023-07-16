@@ -1,0 +1,11 @@
+add_executable(increasing_disks_constant_space increasing_disks_constant_space.cpp)
+target_link_libraries(increasing_disks_constant_space barrier_resilience CGAL::CGAL)
+
+add_executable(increasing_disks_increasing_space increasing_disks_increasing_space.cpp)
+target_link_libraries(increasing_disks_increasing_space barrier_resilience CGAL::CGAL)
+
+add_executable(increasing_radius increasing_radius.cpp)
+target_link_libraries(increasing_radius barrier_resilience CGAL::CGAL)
+
+add_executable(data_structures_comparison data_structures_comparison.cpp)
+target_link_libraries(data_structures_comparison barrier_resilience CGAL::CGAL)

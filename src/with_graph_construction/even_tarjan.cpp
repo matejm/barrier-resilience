@@ -1,6 +1,9 @@
 #include "even_tarjan.hpp"
 
 // Use vector of parents for each node to create BFS tree.
+// Algorithm should actually contain layered graph instead of DFS tree,
+// but in our case this doesn't make a difference, since our graph is
+// special - all internal vertices have either in_degree = 1 or out_degree = 1.
 Graph create_bfs_tree(std::vector<int> parent) {
     // Create empty graph.
     Graph g(parent.size());
