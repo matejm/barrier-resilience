@@ -16,7 +16,7 @@ void assert_query_is_correct(const KDTree<int> &tree, const Trivial<int> &naive,
     }
 }
 
-TEST(TestKDTree, TestQueryDisksOnly) {
+TEST(TestKDTree, TestQuery) {
     // KDTree sadly supports only disks with same radius
     const auto objects = std::vector<GeometryObject<int>>{
             Disk<int>{{0, 0}, 1},
@@ -46,9 +46,12 @@ TEST(TestKDTree, TestQueryDisksOnly) {
     ASSERT_EQ(t.intersecting(Disk<int>{{-2, -2}, 1}), std::nullopt);
     ASSERT_EQ(t.intersecting(Disk<int>{{5, 5}, 1}), std::nullopt);
     ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 50}), std::nullopt);
+
+    // Query with border, expect intersection with disk
+    ASSERT_EQ(t.intersecting(Border<int>{0, true}), objects[0]);
 }
 
-TEST(TestKDTree, TestDelection) {
+TEST(TestKDTree, TestDeletion) {
     const auto objects = std::vector<GeometryObject<int>>{
             Disk<int>{{0, 0}, 1},
             Disk<int>{{2, 2}, 1},

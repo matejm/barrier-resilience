@@ -9,6 +9,7 @@
 #include "utils/visualize.hpp"
 #include "barrier_resilience/barrier_resilience.hpp"
 #include "barrier_resilience/config.hpp"
+#include "with_graph_construction/graph_barrier_resilience.hpp"
 
 // Params of the barrier resilience problem to be solved.
 struct ProblemParams {
@@ -27,8 +28,8 @@ struct ProblemParams {
     int number_of_disks;
 };
 
-// Evaluate the problem for different
-int evalutate_problem(const ProblemParams &params, const Config<int> &config) {
+
+std::vector<Disk<int>> generate_disks(const ProblemParams &params) {
     std::vector<Disk<int>> disks;
 
     // Generate disks.
@@ -38,8 +39,23 @@ int evalutate_problem(const ProblemParams &params, const Config<int> &config) {
                                      params.radius));
     }
 
+    return disks;
+}
+
+
+// Evaluate the problem for different
+int evalutate_problem(const ProblemParams &params, const Config<int> &config) {
+    auto disks = generate_disks(params);
+
     // Solve the problem.
     return barrier_resilience_number_of_disks<int>(disks, params.left, params.right, config);
+}
+
+int evalutate_problem(const ProblemParams &params, const Algorithm &algorithm) {
+    auto disks = generate_disks(params);
+
+    // Solve the problem.
+    return graph_barrier_resilience_number_of_disks(disks, params.left, params.right, algorithm);
 }
 
 

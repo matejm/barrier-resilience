@@ -6,12 +6,30 @@
 #include <unordered_map>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Orthogonal_incremental_neighbor_search.h>
+#include <CGAL/Search_traits_adapter.h>
 #include <CGAL/Search_traits_2.h>
 #include "utils/geometry_objects.hpp"
 #include "data_structure/data_structure.hpp"
 
 template<class T>
 using Cartesian = CGAL::Simple_cartesian<T>;
+
+template<class T>
+using Point_2 = typename Cartesian<T>::Point_2;
+
+template<class T>
+using SearchTraits = CGAL::Search_traits_2<Cartesian<T>>;
+
+// Add disk index to 2D point in a tree.
+template<class T>
+using Point_and_index = std::tuple<Point_2<T>, int>;
+
+// Modified search traits that allows us to search on modified points.
+template<class T>
+using Traits = CGAL::Search_traits_adapter<
+        Point_and_index<T>,
+        CGAL::Nth_of_tuple_property_map<0, Point_and_index<T>>,
+        SearchTraits<T>>;
 
 // Possible strategies:
 // - Orthogonal_k_neighbor_search
@@ -23,30 +41,7 @@ using Cartesian = CGAL::Simple_cartesian<T>;
 // - it's orthogonal (great for Minkowski metric vs K_neighbor_search which is for Manhattan metric).
 // https://doc.cgal.org/latest/Spatial_searching/index.html
 template<class T>
-using NN = CGAL::Orthogonal_incremental_neighbor_search<CGAL::Search_traits_2<Cartesian<T>>>;
-
-// Simple point, used just to be hashed in unordered_map.
-template<class T>
-struct HPoint {
-public:
-    T x, y;
-};
-
-// Custom hash function for Point. T should have hash function.
-template<class T>
-class HPointHash {
-public:
-    size_t operator()(const HPoint<T> &p) const {
-        return std::hash<T>()(p.x) ^ std::hash<T>()(p.y);
-    }
-};
-
-template<typename T>
-struct HPointEqual {
-    bool operator()(const HPoint<T> &p1, const HPoint<T> &p2) const {
-        return p1.x == p2.x && p1.y == p2.y;
-    }
-};
+using NN = CGAL::Orthogonal_incremental_neighbor_search<Traits<T>>;
 
 template<class T>
 class KDTree : public DataStructure<T> {
@@ -56,55 +51,44 @@ private:
     // Potentially left and right border.
     std::vector<Border<T>> borders;
 
-    // Points on each coordinate (to get disk index back).
-    // There can be multiple disks with the same center.
-    std::unordered_map<HPoint<T>, std::vector<int>, HPointHash<T>, HPointEqual<T>> disks_indices;
+    // Vector of all disks, used to check intersection with borders.
+    std::vector<Disk<T>> disks;
+    // Map marking if disk with given index was deleted.
+    std::unordered_map<int, bool> deleted_disks;
 
     // Radius of all disks in the structure should be the same.
     T radius;
 
-    typename Cartesian<T>::Point_2 disk_to_point(const Disk<T> &disk) const {
-        return typename Cartesian<T>::Point_2(disk.center.x, disk.center.y);
+    Point_and_index<T> disk_to_point(const Disk<T> &disk) const {
+        return std::make_tuple(
+                Point_2<T>(disk.center.x, disk.center.y),
+                disk.get_index()
+        );
     }
 
-    // Unsafe version of disk_to_point, that assumes that the object is a disk.
-    typename Cartesian<T>::Point_2 disk_to_point(const GeometryObject<T> &disk) const {
-        return disk_to_point(std::get<Disk<T>>(disk));
-    }
+    Disk<T> point_to_disk(const Point_and_index<T> &point) const {
+        // Unpack point and index.
+        const Point_2<T> p = std::get<0>(point);
+        const int index = std::get<1>(point);
 
-    Disk<T> disk_from_point(const typename Cartesian<T>::Point_2 &point) const {
-        return disk_from_point(HPoint<T>{point[0], point[1]});
-    }
-
-    Disk<T> disk_from_point(const HPoint<T> &point) const {
-        // Create disk from point.
-        auto disk = Disk<T>({point.x, point.y}, radius);
-
-        // Get disk index from the map.
-        // It is fine if we get the first one.
-        auto disk_index = disks_indices.at(point)[0];
-        disk.unsafe_set_index(disk_index);
-
+        auto disk = Disk<T>{{p.x(), p.y()}, radius};
+        disk.unsafe_set_index(index);
         return disk;
     }
 
 public:
-    void rebuild(const std::vector<GeometryObject<T>> &objects_) {
+    void rebuild(const std::vector<GeometryObject<T>> &objects) {
         tree.clear();
+        disks = {};
+
         // Filter objects and add disks to the tree.
-        for (const auto &o: objects_) {
+        for (const auto &o: objects) {
             if (is_disk(o)) {
                 auto disk = std::get<Disk<T>>(o);
 
                 // Insert into tree
-                tree.insert(disk_to_point(o));
-
-                // Memorize disk index.
-                auto point = HPoint<T>{disk.center.x, disk.center.y};
-                if (disks_indices.find(point) == disks_indices.end()) {
-                    disks_indices[point] = std::vector<int>();
-                }
-                disks_indices[point].push_back(disk.get_index());
+                tree.insert(disk_to_point(disk));
+                disks.push_back(disk);
 
                 // Check if radius is the same for all disks.
                 if (radius == 0) {
@@ -118,6 +102,8 @@ public:
                 borders.push_back(border);
             }
         }
+
+        tree.build();
     }
 
     // Given a disk D (not necessarily from the structure), return a disk D' that intersects D (if any).
@@ -134,11 +120,11 @@ public:
                 }
             }
 
-            // Check intersection with disks
-            for (const auto &pair: disks_indices) {
-                // Simply construct disk back from the point.
-                auto disk = disk_from_point(pair.first);
-                if (intersects(object, static_cast<GeometryObject<T>>(disk))) {
+            // Check intersection with disks.
+            // This is O(n) operation, but it's not a problem as we will check it only once.
+            for (const auto disk: disks) {
+                // Check only not deleted disks.
+                if (!deleted_disks.contains(disk.get_index()) && intersects(border, disk)) {
                     return {disk};
                 }
             }
@@ -153,8 +139,10 @@ public:
             }
         }
 
+        auto disk = std::get<Disk<T>>(object);
+
         // Query the tree for nearest neighbor.
-        NN<T> nn(tree, disk_to_point(object));
+        NN<T> nn(tree, std::get<0>(disk_to_point(disk)));
 
         auto it = nn.begin();
         if (it == nn.end()) {
@@ -163,13 +151,13 @@ public:
 
         // Found a disk that intersects with the query disk.
         auto point = it->first;
-        auto disk = disk_from_point(point);
+        auto out_disk = point_to_disk(point);
 
         // We got the closest disk, but it might not intersect with the query disk.
-        if (!intersects(object, static_cast<GeometryObject<T>>(disk))) {
+        if (!intersects(object, static_cast<GeometryObject<T>>(out_disk))) {
             return {};
         }
-        return {disk};
+        return {out_disk};
     }
 
     // Delete object (if it exists) from the structure.
@@ -183,7 +171,6 @@ public:
                     return;
                 }
             }
-
             return;
         }
 
@@ -191,22 +178,8 @@ public:
 
         // Remove point representing the disk from the tree.
         tree.remove(disk_to_point(disk));
-
-        // Remove disk from the map.
-        auto point = HPoint<T>{disk.center.x, disk.center.y};
-        auto disk_index = disk.get_index();
-        auto &disk_indices = disks_indices.at(point);
-
-        // Remove the disk index from the vector.
-        // Not optimal, but we don't expect many disks with the same center.
-        for (auto it = disk_indices.begin(); it != disk_indices.end(); ++it) {
-            if (*it == disk_index) {
-                disk_indices.erase(it);
-                break;
-            }
-        }
+        deleted_disks[disk.get_index()] = true;
     }
-
 };
 
 #endif //DATA_STRUCTURE_KDTREE_HPP

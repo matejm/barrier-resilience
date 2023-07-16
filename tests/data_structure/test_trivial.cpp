@@ -31,6 +31,9 @@ TEST(TestTrivialDataStructure, TestQuery) {
     ASSERT_EQ(t.intersecting(Disk<int>{{-2, -2}, 1}), std::nullopt);
     ASSERT_EQ(t.intersecting(Disk<int>{{5, 5}, 1}), std::nullopt);
     ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 50}), std::nullopt);
+
+    // Query with border, expect intersection with disk
+    ASSERT_EQ(t.intersecting(Border<int>{0, true}), objects[0]);
 }
 
 TEST(TestTrivialDataStructure, TestDelection) {
