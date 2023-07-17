@@ -3,7 +3,7 @@
 #include "data_structure/trivial.hpp"
 #include <vector>
 
-void assert_query_is_correct(const KDTree<int> &tree, const Trivial<int> &naive, const Disk<int> &disk) {
+void assert_query_is_correct(KDTree<int> &tree, Trivial<int> &naive, const Disk<int> &disk) {
     auto d1 = tree.intersecting(disk);
     auto d2 = naive.intersecting(disk);
 

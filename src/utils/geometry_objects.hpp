@@ -86,6 +86,15 @@ struct Border {
     }
 };
 
+// Custom hash function for transformed vertices.
+template<class T>
+class BorderHash {
+public:
+    size_t operator()(const Border<T> &border) const {
+        return std::hash<T>()(border.x) ^ std::hash<bool>()(border.left);
+    }
+};
+
 // Geometry object is either a disk or a border.
 template<class T>
 using GeometryObject = std::variant<Disk<T>, Border<T>>;

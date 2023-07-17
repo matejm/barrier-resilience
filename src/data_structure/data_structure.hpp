@@ -17,7 +17,7 @@ public:
     virtual void rebuild(const std::vector<GeometryObject<T>> &objects_) = 0;
 
     // Given a disk D (not necessarily from the structure), return structure that intersects D (if any).
-    virtual std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) const = 0;
+    virtual std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) = 0;
 
     // Delete object (if it exists) from the structure.
     virtual void delete_object(const GeometryObject<T> &o) = 0;

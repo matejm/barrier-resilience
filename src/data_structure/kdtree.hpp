@@ -5,7 +5,7 @@
 #include <optional>
 #include <unordered_map>
 #include <CGAL/Simple_cartesian.h>
-#include <CGAL/Orthogonal_incremental_neighbor_search.h>
+#include <CGAL/Orthogonal_k_neighbor_search.h>
 #include <CGAL/Search_traits_adapter.h>
 #include <CGAL/Search_traits_2.h>
 #include "utils/geometry_objects.hpp"
@@ -41,7 +41,8 @@ using Traits = CGAL::Search_traits_adapter<
 // - it's orthogonal (great for Minkowski metric vs K_neighbor_search which is for Manhattan metric).
 // https://doc.cgal.org/latest/Spatial_searching/index.html
 template<class T>
-using NN = CGAL::Orthogonal_incremental_neighbor_search<Traits<T>>;
+using NN = CGAL::Orthogonal_k_neighbor_search<Traits<T>>;
+
 
 template<class T>
 class KDTree : public DataStructure<T> {
@@ -53,6 +54,16 @@ private:
 
     // Vector of all disks, used to check intersection with borders.
     std::vector<Disk<T>> disks;
+
+    // Save last checked index for each border query.
+    // (there will be a lot of queries for the same border,
+    // actually we expect that there will be only 2 borders).
+    // Using cache, we amortize the cost of checking for intersection with borders
+    // from O(n^2) to O(n).
+    // If query call is repeated, simply start checking from the last checked index.
+    // If disk is still there, we can just return it, otherwise we can continue checking.
+    std::unordered_map<const Border<T>, int, BorderHash<T>> border_checked_index_cache;
+
     // Map marking if disk with given index was deleted.
     std::unordered_map<int, bool> deleted_disks;
 
@@ -107,10 +118,8 @@ public:
     }
 
     // Given a disk D (not necessarily from the structure), return a disk D' that intersects D (if any).
-    std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) const {
+    std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) {
         if (!is_disk(object)) {
-            // Intersection with border is actually not O(log n), but this will be fine for the algorithm
-            // as intersection with borders will be checked only in first iteration.
             auto border = std::get<Border<T>>(object);
 
             // Check intersection with borders
@@ -121,13 +130,27 @@ public:
             }
 
             // Check intersection with disks.
-            // This is O(n) operation, but it's not a problem as we will check it only once.
-            for (const auto disk: disks) {
+            // This is O(n) operation, but it's not a problem since it will be cached and amortized.
+
+            // Get last checked index for this border.
+            int last_checked_index = border_checked_index_cache[border];
+            if (last_checked_index >= disks.size()) {
+                // Checked all
+                return {};
+            }
+
+            for (int i = last_checked_index; i < disks.size(); i++) {
+                auto disk = disks[i];
                 // Check only not deleted disks.
                 if (!deleted_disks.contains(disk.get_index()) && intersects(border, disk)) {
+                    // Update last checked index.
+                    border_checked_index_cache[border] = i;
                     return {disk};
                 }
             }
+
+            // Update last checked index.
+            border_checked_index_cache[border] = disks.size();
 
             return {};
         }
@@ -145,19 +168,18 @@ public:
         NN<T> nn(tree, std::get<0>(disk_to_point(disk)));
 
         auto it = nn.begin();
-        if (it == nn.end()) {
-            return {};
+        if (it != nn.end()) {
+            // Found a disk that intersects with the query disk.
+            auto point = it->first;
+            auto out_disk = point_to_disk(point);
+
+            // We got the closest disk, but it might not intersect with the query disk.
+            if (intersects(object, static_cast<GeometryObject<T>>(out_disk))) {
+                return {out_disk};
+            }
         }
 
-        // Found a disk that intersects with the query disk.
-        auto point = it->first;
-        auto out_disk = point_to_disk(point);
-
-        // We got the closest disk, but it might not intersect with the query disk.
-        if (!intersects(object, static_cast<GeometryObject<T>>(out_disk))) {
-            return {};
-        }
-        return {out_disk};
+        return {};
     }
 
     // Delete object (if it exists) from the structure.
