@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "utils/geometry_objects.hpp"
 #include "barrier_resilience/barrier_resilience.hpp"
 #include "barrier_resilience/config.hpp"
