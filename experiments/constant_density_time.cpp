@@ -7,14 +7,14 @@ int main() {
     const auto config_trivial = Config<int>::with_trivial_datastructure();
     const auto config_kdtree = Config<int>::with_kdtree();
 
-    for (int i = 0; i < 20000; i += 1000) {
-        auto params = ProblemParams{10, 0, 200, 0, 200, i};
+    for (int i = 0; i < 100000; i += 100) {
+        auto params = ProblemParams{10, 0, 100, 0, i / 10, i};
 
         auto times = compare_algorithms(params, {config_trivial, config_kdtree},
                                         {Algorithm::FordFulkerson}
         );
 
-        std::cout << i << "," << times[0] << "," << times[1] << std::endl;
+        std::cout << i << "," << times[0] << "," << times[1] << "," << times[2] << std::endl;
     }
 
     return 0;
