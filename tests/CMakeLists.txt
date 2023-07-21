@@ -19,13 +19,14 @@ add_executable(
         data_structure/test_trivial.cpp
         barrier_resilience/test_find_levels.cpp
         barrier_resilience/test_blocking_family.cpp
-        barrier_resilience/test_barrier_resilience.cpp)
+        barrier_resilience/test_barrier_resilience.cpp data_structure/test_kdtree.cpp)
 
 target_link_libraries(
         tests
         barrier_resilience
         GTest::gtest_main
         pthread
+        CGAL::CGAL
 )
 
 include(GoogleTest)

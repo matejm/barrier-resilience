@@ -48,6 +48,10 @@ public:
         };
     }
 
+    void unsafe_set_index(int index_) {
+        index = index_;
+    }
+
     // Friend - this method can set index of a disk.
     template<class S>
     friend void add_index_to_disks(std::vector<Disk<S>> &disks);
@@ -79,6 +83,15 @@ struct Border {
 
     friend std::ostream &operator<<(std::ostream &o, Border const &border) {
         return o << "Border(" << border.x << ", " << (border.left ? "left" : "right") << ")";
+    }
+};
+
+// Custom hash function for transformed vertices.
+template<class T>
+class BorderHash {
+public:
+    size_t operator()(const Border<T> &border) const {
+        return std::hash<T>()(border.x) ^ std::hash<bool>()(border.left);
     }
 };
 

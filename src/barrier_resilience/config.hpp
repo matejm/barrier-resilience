@@ -3,6 +3,7 @@
 
 #include "data_structure/data_structure.hpp"
 #include "data_structure/trivial.hpp"
+#include "data_structure/kdtree.hpp"
 #include "functional"
 
 template<class T>
@@ -14,6 +15,14 @@ struct Config {
         return Config<T>{
                 []() -> DataStructure<T> * {
                     return new Trivial<T>();
+                }
+        };
+    }
+
+    static Config<T> with_kdtree() {
+        return Config<T>{
+                []() -> DataStructure<T> * {
+                    return new KDTree<T>();
                 }
         };
     }

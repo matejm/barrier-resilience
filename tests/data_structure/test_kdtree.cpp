@@ -1,15 +1,30 @@
 #include <gtest/gtest.h>
+#include "data_structure/kdtree.hpp"
 #include "data_structure/trivial.hpp"
 #include <vector>
 
-TEST(TestTrivialDataStructure, TestQuery) {
+void assert_query_is_correct(KDTree<int> &tree, Trivial<int> &naive, const Disk<int> &disk) {
+    auto d1 = tree.intersecting(disk);
+    auto d2 = naive.intersecting(disk);
+
+    // Check if both solutions agree
+    ASSERT_EQ(d1.has_value(), d2.has_value());
+
+    if (d1.has_value() && d2.has_value()) {
+        // Values might be different, but response is correct as long as d1 is intersecting disk
+        ASSERT_TRUE(intersects(d1.value(), static_cast<GeometryObject<int>>(disk)));
+    }
+}
+
+TEST(TestKDTree, TestQuery) {
+    // KDTree sadly supports only disks with same radius
     const auto objects = std::vector<GeometryObject<int>>{
             Disk<int>{{0, 0}, 1},
             Disk<int>{{2, 2}, 1},
             Border<int>{10, false},
     };
 
-    auto t = Trivial<int>();
+    auto t = KDTree<int>();
     t.rebuild(objects);
 
     // Query objects and check if we always get intersecting disk
@@ -36,7 +51,7 @@ TEST(TestTrivialDataStructure, TestQuery) {
     ASSERT_EQ(t.intersecting(Border<int>{0, true}), objects[0]);
 }
 
-TEST(TestTrivialDataStructure, TestDelection) {
+TEST(TestKDTree, TestDeletion) {
     const auto objects = std::vector<GeometryObject<int>>{
             Disk<int>{{0, 0}, 1},
             Disk<int>{{2, 2}, 1},
@@ -45,7 +60,7 @@ TEST(TestTrivialDataStructure, TestDelection) {
             Border<int>{-100, true},
     };
 
-    auto t = Trivial<int>();
+    auto t = KDTree<int>();
     t.rebuild(objects);
 
     // Delete objects and check if they are deleted
@@ -73,4 +88,44 @@ TEST(TestTrivialDataStructure, TestDelection) {
 
     t.delete_object(Border<int>{-100, true});
     ASSERT_EQ(t.intersecting(Disk<int>{{-100, 0}, 1}), std::nullopt);
+}
+
+TEST(TestKDTree, TestLargerCase) {
+    // Generate large random test case and compare with naive solution
+    auto random = []() { return rand() % 2233; };
+    const auto r = 10;
+
+    auto objects = std::vector<GeometryObject<int>>();
+
+    for (int i = 0; i < 1000; ++i) {
+        objects.push_back(Disk<int>{{random(), random()}, r});
+    }
+
+    auto tree = KDTree<int>();
+    auto naive = Trivial<int>();
+    tree.rebuild(objects);
+    naive.rebuild(objects);
+
+    // 1000 random queries
+    for (int i = 0; i < 1000; ++i) {
+        int x = random(), y = random();
+        auto disk = Disk<int>{{x, y}, r};
+        assert_query_is_correct(tree, naive, disk);
+    }
+
+    // 500 random deletions
+    for (int i = 0; i < 500; ++i) {
+        int j = rand() % objects.size();
+        auto disk = objects[j];
+
+        tree.delete_object(disk);
+        naive.delete_object(disk);
+    }
+
+    // 1000 random queries
+    for (int i = 0; i < 1000; ++i) {
+        int x = random(), y = random();
+        auto disk = Disk<int>{{x, y}, r};
+        assert_query_is_correct(tree, naive, disk);
+    }
 }

@@ -20,7 +20,7 @@ public:
     }
 
     // Given a disk D (not necessarily from the structure), return a disk D' that intersects D (if any).
-    std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) const {
+    std::optional<GeometryObject<T>> intersecting(const GeometryObject<T> &object) {
         for (const auto &o: objects) {
             if (intersects(o, object)) {
                 return {o};
