@@ -1,23 +1,34 @@
-#include <cassert>
 #include <iostream>
 #include "barrier_resilience/config.hpp"
-#include "with_graph_construction/graph_barrier_resilience.hpp"
 #include "helpers.hpp"
 
 int main() {
     const auto config_trivial = Config<int>::with_trivial_datastructure();
     const auto config_kdtree = Config<int>::with_kdtree();
 
-    for (int i = 1; i < 10001; i += 100) {
-        const ProblemParams params = {1, 0, 1, 0, 1, i};
+    // Evaluate 5-times and take the average
+    const auto repeats = 5;
+
+    for (int i = 0; i < 5001; i += 100) {
+
+        double times_trivial = 0, times_kdtree = 0, times_ff = 0;
+
+        for (int j = 0; j < repeats; j++) {
+            const ProblemParams params = {1, 0, 1, 0, 1, i};
 
 
-        auto results = compare_algorithms(params,
-                                          {config_trivial, config_kdtree},
-                                          {}
-        );
+            auto times = compare_algorithms(params,
+                                            {config_trivial, config_kdtree},
+                                            {Algorithm::FordFulkerson}
+            );
 
-        std::cout << i << "," << results[0] << "," << results[1] << "," << results[2] << "," << results[3] << std::endl;
+            times_trivial += times[0];
+            times_kdtree += times[1];
+            times_ff += times[2];
+        }
+
+        std::cout << i << "," << times_trivial / repeats << "," << times_kdtree / repeats << "," << times_ff / repeats
+                  << std::endl;
     }
 
     return 0;
