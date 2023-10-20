@@ -1,7 +1,7 @@
 ## Barrier Resilience
 
 This repository contains implementations of multiple algorithms solving the problem of barrier resilience in a
-rectangular domain. Repository is a part of my master's thesis.
+rectangular domain. Repository is a part of my master's thesis which can be found [here](https://repozitorij.uni-lj.si/IzpisGradiva.php?id=151096).
 
 #### Prerequisites
 
